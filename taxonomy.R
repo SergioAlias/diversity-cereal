@@ -49,7 +49,7 @@ meco <- qiime2meco(dada2_file_path,
 ## Relabel unclassified
 
 # meco$tax_table$Phylum[grepl("__$", meco$tax_table$Phylum)] %<>% paste0(., "Unclassified")
-meco$tax_table$Family[grepl("__$", meco$tax_table$Family)] %<>% paste0(., "Unclassified")
+# meco$tax_table$Family[grepl("__$", meco$tax_table$Family)] %<>% paste0(., "Unclassified")
 # meco$tax_table$Genus[grepl("__$", meco$tax_table$Genus)] %<>% paste0(., "Unclassified")
 
 ## Create trans_abund object
