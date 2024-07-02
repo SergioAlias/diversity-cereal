@@ -43,6 +43,8 @@ metadata <- read.csv(file.path(cluster_path,
                                     "home/salias/projects/sporeflow/metadata.tsv"),
                      sep = "\t")
 
+colnames(metadata)[1] <- "SampleID"
+
 ## Get variance explained by each PCo 
 
 jaccard_pco1 <- round(jaccard[["data"]]$ProportionExplained$PC1 * 100, 2)
