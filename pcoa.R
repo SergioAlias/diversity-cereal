@@ -30,8 +30,14 @@ outdir <- "/home/sergio/scratch/diversity-cereal"
 
 jaccard_file_path <- file.path(project_dir,
                              "qiime2/diversity/jaccard_pcoa_results.qza")
+bray_curtis_file_path <- file.path(project_dir,
+                                   "qiime2/diversity/bray_curtis_pcoa_results.qza")
+aitchison_file_path <- file.path(project_dir,
+                                 "qiime2/diversity/aitchison_pcoa_results.qza")
 
 jaccard <- read_qza(jaccard_file_path)
+bray_curtis <- read_qza(bray_curtis_file_path)
+aitchison <- read_qza(aitchison_file_path)
 
 metadata <- read.csv(file.path(cluster_path,
                                     "home/salias/projects/sporeflow/metadata.tsv"),
@@ -42,8 +48,13 @@ metadata <- read.csv(file.path(cluster_path,
 jaccard_pco1 <- round(jaccard[["data"]]$ProportionExplained$PC1 * 100, 2)
 jaccard_pco2 <- round(jaccard[["data"]]$ProportionExplained$PC2 * 100, 2)
 
+bray_curtis_pco1 <- round(bray_curtis[["data"]]$ProportionExplained$PC1 * 100, 2)
+bray_curtis_pco2 <- round(bray_curtis[["data"]]$ProportionExplained$PC2 * 100, 2)
 
-## Plot PCoA
+aitchison_pco1 <- round(aitchison[["data"]]$ProportionExplained$PC1 * 100, 2)
+aitchison_pco2 <- round(aitchison[["data"]]$ProportionExplained$PC2 * 100, 2)
+
+## PCoA plots
 
 pdf(file.path(outdir, "pcoa_jaccard.pdf"))
 
@@ -54,9 +65,40 @@ jaccard$data$Vectors %>%
   geom_point(alpha=0.5) + #alpha controls transparency and helps when points are overlapping
   theme_q2r() +
   scale_shape_manual(values=c(16,1,2), name="Fertilization") + #see http://www.sthda.com/sthda/RDoc/figure/graphs/r-plot-pch-symbols-points-in-r.png for numeric shape codes
-  scale_size_continuous(name="Shannon Diversity") +
   scale_color_discrete(name="Location") +
   xlab(paste0("PC1 | ", jaccard_pco1, "% of variance explained")) +
   ylab(paste0("PC2 | ", jaccard_pco2, "% of variance explained"))
+
+dev.off()
+
+
+pdf(file.path(outdir, "pcoa_bray_curtis.pdf"))
+
+bray_curtis$data$Vectors %>%
+  select(SampleID, PC1, PC2) %>%
+  left_join(metadata) %>%
+  ggplot(aes(x=PC1, y=PC2, color=`Location`, shape=`Fertilization`)) +
+  geom_point(alpha=0.5) +
+  theme_q2r() +
+  scale_shape_manual(values=c(16,1,2), name="Fertilization") +
+  scale_color_discrete(name="Location") +
+  xlab(paste0("PC1 | ", bray_curtis_pco1, "% of variance explained")) +
+  ylab(paste0("PC2 | ", bray_curtis_pco2, "% of variance explained"))
+
+dev.off()
+
+
+pdf(file.path(outdir, "pcoa_aitchison.pdf"))
+
+aitchison$data$Vectors %>%
+  select(SampleID, PC1, PC2) %>%
+  left_join(metadata) %>%
+  ggplot(aes(x=PC1, y=PC2, color=`Location`, shape=`Fertilization`)) +
+  geom_point(alpha=0.5) +
+  theme_q2r() +
+  scale_shape_manual(values=c(16,1,2), name="Fertilization") +
+  scale_color_discrete(name="Location") +
+  xlab(paste0("PC1 | ", aitchison_pco1, "% of variance explained")) +
+  ylab(paste0("PC2 | ", aitchison_pco2, "% of variance explained"))
 
 dev.off()
