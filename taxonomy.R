@@ -4,9 +4,9 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-01                                       ║
-# ║ Last Modified  : 2024-07-01                                       ║
+# ║ Last Modified  : 2024-07-02                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
-# ║ Contact        : salias@ucm.es                                    ║
+# ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
 
 ## Libraries
@@ -17,6 +17,8 @@ library(microeco)
 library(ggplot2)
 library(ggnested)
 library(ggh4x)
+library(ggradar)
+library(ggtern)
 
 
 ## Import QIIME 2 files
@@ -46,17 +48,14 @@ meco <- qiime2meco(dada2_file_path,
                    taxonomy_table = taxonomy_file_path)
 
 
-## Relabel unclassified
+## Relabel UNITE prefixes for cleaner plotting
 
-# meco$tax_table$Phylum[grepl("__$", meco$tax_table$Phylum)] %<>% paste0(., "Unclassified")
-# meco$tax_table$Family[grepl("__$", meco$tax_table$Family)] %<>% paste0(., "Unclassified")
-# meco$tax_table$Genus[grepl("__$", meco$tax_table$Genus)] %<>% paste0(., "Unclassified")
+meco$tax_table$Phylum <- gsub("p__", "", meco$tax_table$Phylum)
+meco$tax_table$Family <- gsub("f__", "", meco$tax_table$Family)
 
-## Create trans_abund object
+# Create trans_abund objects and plot stuff
 
-t_family <- trans_abund$new(dataset = meco,
-                            taxrank = "Family",
-                            ntaxa = 20)
+## Nested barplot (Phylum / Class)
 
 t_stacked_phylum <- trans_abund$new(dataset = meco,
                                     taxrank = "Class",
@@ -65,11 +64,32 @@ t_stacked_phylum <- trans_abund$new(dataset = meco,
                                     high_level = "Phylum",
                                     prefix = "c__")
 
-## Nested barplot
-
 pdf(file.path(outdir, "barplot_class.pdf"))
 
 t_stacked_phylum$plot_bar(ggnested = TRUE,
+                          high_level_add_other = TRUE,
+                          xtext_keep = FALSE,
+                          # xtext_angle = 90,
+                          # xtext_size = 6,
+                          facet = c("Type", "Sampling"),
+                          others_color = "grey90") + 
+  theme(ggh4x.facet.nestline = element_line(colour = "grey95"))
+
+dev.off()
+
+## Nested barplot (Family / Genus)
+
+t_stacked_family <- trans_abund$new(dataset = meco,
+                                    taxrank = "Genus",
+                                    ntaxa = 15,
+                                    delete_taxonomy_prefix = TRUE,
+                                    high_level = "Family",
+                                    prefix = "g__")
+
+pdf(file.path(outdir, "barplot_genus.pdf"),
+    width = 12)
+
+t_stacked_family$plot_bar(ggnested = TRUE,
                           high_level_add_other = TRUE,
                           xtext_keep = FALSE,
                           # xtext_angle = 90,
@@ -80,6 +100,10 @@ t_stacked_phylum$plot_bar(ggnested = TRUE,
 dev.off()
 
 ## Boxplot
+
+t_family <- trans_abund$new(dataset = meco,
+                            taxrank = "Family",
+                            ntaxa = 20)
 
 pdf(file.path(outdir, "boxplot_family.pdf"))
 
@@ -100,3 +124,28 @@ t_family$plot_box(group = "Type",
 
 dev.off()
 
+## Radar plot 
+
+t_radar <- trans_abund$new(dataset = meco,
+                           taxrank = "Class",
+                           ntaxa = 8,
+                           groupmean = "Sampling")
+
+pdf(file.path(outdir, "radar_plot.pdf"))
+
+t_radar$plot_radar(values.radar = c("0%", "25%", "50%"), grid.min = 0, grid.mid = 0.25, grid.max = 0.5)
+
+dev.off()
+
+## Ternary plot 
+
+t_tern <- trans_abund$new(dataset = meco,
+                           taxrank = "Genus",
+                           ntaxa = 8,
+                           groupmean = "Fertilization")
+
+pdf(file.path(outdir, "tern_plot.pdf"))
+
+t_tern$plot_tern()
+
+dev.off()
