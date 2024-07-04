@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-02                                       ║
-# ║ Last Modified  : 2024-07-03                                       ║
+# ║ Last Modified  : 2024-07-04                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -72,7 +72,7 @@ aitchison_pco2 <- round(aitchison[["data"]]$ProportionExplained$PC2 * 100, 2)
 
 location_colors <- c(FUE = "#df982c",
                      RIO = "#59b2bf",
-                     ZAM = "#ee4b2b")
+                     ZAM = "#ff10f0")
 location_shapes <- c(FUE = 17,
                      RIO = 15,
                      ZAM = 16)
@@ -82,6 +82,12 @@ treatment_colors <- c(ECO ="#028900",
 treatment_shapes <- c(ECO = 17,
                       ROT = 15,
                       CON = 16)
+movement_colors <- c(MIN ="#028900",
+                     YES = "#602320",
+                     NO = "#1b85b8")
+movement_shapes <- c(MIN = 17,
+                     YES = 15,
+                     NO = 16)
 
 ## PCoA plots
 
@@ -126,6 +132,24 @@ p_j2
 
 dev.off()
 
+pdf(file.path(outdir, "pcoa_jaccard_movement.pdf"))
+
+p_j3 <- jaccard$data$Vectors %>%
+  select(SampleID, PC1, PC2) %>%
+  left_join(metadata) %>%
+  ggplot(aes(x = PC1, y = PC2, color = `Movement`, shape = `Movement`)) +
+  geom_point(alpha=0.5) +
+  theme_bw() +
+  scale_color_manual(values = movement_colors, name = "Movement") +
+  scale_shape_manual(values = movement_shapes, name = "Movement") +
+  xlab(paste0("PCo-1 | ", jaccard_pco1, "% of variance explained")) +
+  ylab(paste0("PCo-2 | ", jaccard_pco2, "% of variance explained")) +
+  stat_ellipse(aes(group = `Movement`)) +
+  guides(color = guide_legend(override.aes = list(linetype = 0, alpha=1)))
+
+p_j3
+
+dev.off()
 
 ### Bray-Curtis
 
