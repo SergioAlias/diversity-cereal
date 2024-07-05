@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-02                                       ║
-# ║ Last Modified  : 2024-07-02                                       ║
+# ║ Last Modified  : 2024-07-05                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -14,6 +14,7 @@
 library(tidyverse)
 library(qiime2R)
 library(ggpubr)
+
 
 ## Import QIIME 2 files
 
@@ -41,6 +42,11 @@ shannon_file_path <- file.path(project_dir,
 shannon <- read_qza(shannon_file_path)
 shannon <- shannon$data %>% rownames_to_column("SampleID")
 metadata %<>% left_join(shannon)
+
+
+## Colors and shapes
+
+source("/home/sergio/projects/diversity-cereal/colors.R")
 
 
 ## Kruskal-Wallis
