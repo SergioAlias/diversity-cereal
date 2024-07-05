@@ -11,6 +11,7 @@
 
 ## Libraries
 
+library(magrittr)
 library(tidyverse)
 library(qiime2R)
 library(ggpubr)
@@ -36,6 +37,13 @@ metadata <- read.csv(file.path(cluster_path,
 
 colnames(metadata)[1] <- "SampleID"
 
+metadata %<>%
+  mutate(Treatment = case_when(
+    Fertilization == "MFI" ~ "CON",
+    Fertilization == "ORG" ~ "ECO",
+    Fertilization == "ROT" ~ "ROT"
+  ))
+
 shannon_file_path <- file.path(project_dir,
                                "qiime2/diversity/shannon_vector.qza")
 
@@ -58,14 +66,16 @@ pw_shannon <- pairwise.wilcox.test(x = metadata$shannon_entropy,
 
 ## Alpha boxplot
 
-my_comparisons <- combn(unique(metadata$Fertilization), 2, simplify = FALSE)
+my_comparisons <- combn(unique(metadata$Treatment), 2, simplify = FALSE)
 
 pdf(file.path(outdir, "shannon.pdf"))
 
 metadata %>%
-  ggboxplot("Fertilization", "shannon_entropy",
-            color = "Fertilization", palette =c("#00AFBB", "#E7B800", "#FC4E07"),
-          add = "jitter", shape = "Fertilization") +
+  ggboxplot("Treatment", "shannon_entropy",
+            color = "Treatment", palette =c("#00AFBB", "#E7B800", "#FC4E07"),
+          add = "jitter", shape = "Treatment") +
+  scale_color_manual(values = treatment_colors, name = "Treatment") +
+  scale_shape_manual(values = treatment_shapes, name = "Treatment") +
   ylab("Shannon") +
   stat_compare_means(comparisons = my_comparisons,
                      label.y = c(7.3, 7.5, 7.4),
