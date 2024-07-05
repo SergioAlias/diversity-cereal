@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-04                                       ║
-# ║ Last Modified  : 2024-07-04                                       ║
+# ║ Last Modified  : 2024-07-05                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -14,7 +14,7 @@
 library(readr)
 library(tidyverse)
 library(ggplot2)
-
+library(EnhancedVolcano)
 
 ## Functions
 
@@ -52,17 +52,19 @@ cluster_path <- paste0("/run/user/1001/gvfs/sftp:host=",
 project_dir <- file.path(cluster_path,
                          "scratch/salias/projects",
                          project_name)
-outdir <- "/home/sergio/scratch/diversity-cereal"
+outdir <- "/home/sergio/scratch/diversity-cereal/abundance"
 
-location_file_path <- file.path(project_dir,
-                               "qiime2/abundance/Location/filtered_ancombc.qza")
+treatment_file_path <- file.path(project_dir,
+                               "qiime2/abundance/Fertilization/level_7_ancombc.qza")
 
-location_ancombc <- import_ancombc(location_file_path)
+treatment_ancombc <- import_ancombc(treatment_file_path)
 
 taxonomy_file_path <- file.path(project_dir,
                                 "qiime2/taxonomy/taxonomy.qza")
 
-taxonomy <- read_qza(taxonomy_file_path)
+taxonomy <- read_qza(taxonomy_file_path)$data
+
+taxonomy %<>% parse_taxonomy() %>% rownames_to_column("id")
 
 metadata <- read.csv(file.path(cluster_path,
                                "home/salias/projects/sporeflow/metadata.tsv"),
@@ -76,3 +78,42 @@ metadata %<>%
     Fertilization == "ORG" ~ "ECO",
     Fertilization == "ROT" ~ "ROT"
   ))
+
+treatment_ancombc %<>%
+  mutate(Species = sapply(str_split(id, ";"), function(x) tail(x, 1)))
+# treatment_ancombc %<>% left_join(taxonomy)
+
+micotoxin_producers <- c("Fusarium",
+                         "Aspergillus",
+                         "Penicillium",
+                         "Alternaria",
+                         "Claviceps")
+
+
+contains_producer <- function(taxa, producers) {
+  if (any(str_detect(taxa, producers))) {
+    return(taxa %>% str_remove("^[a-z]__") %>% str_replace_all("_", " "))
+  } else {
+    return(NA)
+  }
+}
+
+treatment_ancombc %<>%
+  mutate(Species = sapply(Species, contains_producer, producers = micotoxin_producers))
+
+## Volcano plots
+
+pdf(file.path(outdir, "volcano_treatment_eco.pdf"))
+
+vp_treatment_eco <- treatment_ancombc %>%
+  EnhancedVolcano(lab = treatment_ancombc$Species,
+                  x = "FertilizationORG_lfc",
+                  y = "FertilizationORG_q_val",
+                  pCutoff = 1e-05,
+                  FCcutoff = 2,
+                  drawConnectors = TRUE,
+                  widthConnectors = 0.75)
+
+vp_treatment_eco
+
+dev.off()
