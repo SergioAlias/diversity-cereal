@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-02                                       ║
-# ║ Last Modified  : 2024-07-04                                       ║
+# ║ Last Modified  : 2024-07-05                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -57,6 +57,7 @@ metadata %<>%
     Fertilization == "ROT" ~ "ROT"
   ))
 
+
 ## Get variance explained by each PCo 
 
 jaccard_pco1 <- round(jaccard[["data"]]$ProportionExplained$PC1 * 100, 2)
@@ -68,26 +69,11 @@ bray_curtis_pco2 <- round(bray_curtis[["data"]]$ProportionExplained$PC2 * 100, 2
 aitchison_pco1 <- round(aitchison[["data"]]$ProportionExplained$PC1 * 100, 2)
 aitchison_pco2 <- round(aitchison[["data"]]$ProportionExplained$PC2 * 100, 2)
 
+
 ## Colors and shapes
 
-location_colors <- c(FUE = "#df982c",
-                     RIO = "#59b2bf",
-                     ZAM = "#ff10f0")
-location_shapes <- c(FUE = 17,
-                     RIO = 15,
-                     ZAM = 16)
-treatment_colors <- c(ECO ="#028900",
-                      CON = "#602320",
-                      ROT = "#1b85b8")
-treatment_shapes <- c(ECO = 17,
-                      ROT = 15,
-                      CON = 16)
-movement_colors <- c(MIN ="#028900",
-                     YES = "#602320",
-                     NO = "#1b85b8")
-movement_shapes <- c(MIN = 17,
-                     YES = 15,
-                     NO = 16)
+source("/home/sergio/projects/diversity-cereal/colors.R")
+
 
 ## PCoA plots
 
