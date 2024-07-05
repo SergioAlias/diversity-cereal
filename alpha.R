@@ -15,6 +15,7 @@ library(magrittr)
 library(tidyverse)
 library(qiime2R)
 library(ggpubr)
+library(patchwork)
 
 
 ## Import QIIME 2 files
@@ -29,7 +30,7 @@ cluster_path <- paste0("/run/user/1001/gvfs/sftp:host=",
 project_dir <- file.path(cluster_path,
                          "scratch/salias/projects",
                          project_name)
-outdir <- "/home/sergio/scratch/diversity-cereal"
+outdir <- "/home/sergio/scratch/diversity-cereal/alpha"
 
 metadata <- read.csv(file.path(cluster_path,
                                "home/salias/projects/sporeflow/metadata.tsv"),
@@ -46,11 +47,16 @@ metadata %<>%
 
 shannon_file_path <- file.path(project_dir,
                                "qiime2/diversity/shannon_vector.qza")
+simpson_file_path <- file.path(project_dir,
+                               "qiime2/diversity/simpson_vector.qza")
 
 shannon <- read_qza(shannon_file_path)
 shannon <- shannon$data %>% rownames_to_column("SampleID")
 metadata %<>% left_join(shannon)
 
+simpson <- read_qza(simpson_file_path)
+simpson <- simpson$data %>% rownames_to_column("SampleID")
+metadata %<>% left_join(simpson)
 
 ## Colors and shapes
 
@@ -66,21 +72,57 @@ pw_shannon <- pairwise.wilcox.test(x = metadata$shannon_entropy,
 
 ## Alpha boxplot
 
-my_comparisons <- combn(unique(metadata$Treatment), 2, simplify = FALSE)
+### Shannon
 
-pdf(file.path(outdir, "shannon.pdf"))
+comparisons_treatment <- combn(unique(metadata$Treatment), 2, simplify = FALSE)
 
-metadata %>%
+pdf(file.path(outdir, "shannon_treatment.pdf"))
+
+shannon_t <- metadata %>%
   ggboxplot("Treatment", "shannon_entropy",
-            color = "Treatment", palette =c("#00AFBB", "#E7B800", "#FC4E07"),
+            color = "Treatment", palette = treatment_colors,
           add = "jitter", shape = "Treatment") +
-  scale_color_manual(values = treatment_colors, name = "Treatment") +
   scale_shape_manual(values = treatment_shapes, name = "Treatment") +
   ylab("Shannon") +
-  stat_compare_means(comparisons = my_comparisons,
-                     label.y = c(7.3, 7.5, 7.4),
-                     label = "p.signif") +
-  stat_compare_means(label.y = 7.7)
+  stat_compare_means(label.y = 7.7) +
+  stat_compare_means(aes(label = after_stat(paste0('p = ', p.format, '\n', p.signif))),
+                     comparisons = comparisons_treatment,
+                     label.y = c(7.3, 7.5, 7.4))
+
+shannon_t
+
+
+### Simpson
+
+dev.off()
+
+pdf(file.path(outdir, "simpson_treatment.pdf"))
+
+simpson_t <- metadata %>%
+  ggboxplot("Treatment", "simpson",
+            color = "Treatment", palette = treatment_colors,
+            add = "jitter", shape = "Treatment") +
+  scale_shape_manual(values = treatment_shapes, name = "Treatment") +
+  ylab("Simpson") +
+  stat_compare_means(label.y = 0.992) +
+  stat_compare_means(aes(label = after_stat(paste0('p = ', p.format, '\n', p.signif))),
+                     comparisons = comparisons_treatment,
+                     label.y = c(0.982, 0.987, 0.9845))
+
+simpson_t
+
+dev.off()
+
+
+### Grouped plots
+
+pdf(file.path(outdir, "patched_treatment.pdf"),
+    width = 12)
+
+(shannon_t + theme(legend.position="none") + simpson_t + theme(legend.position="none") &
+    theme(plot.tag.position = "topleft")) +
+  plot_layout(axis_titles = "collect") +
+  plot_annotation(tag_levels = 'A')
 
 dev.off()
 
