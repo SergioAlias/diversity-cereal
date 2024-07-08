@@ -4,13 +4,15 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-04                                       ║
-# ║ Last Modified  : 2024-07-05                                       ║
+# ║ Last Modified  : 2024-07-08                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
 
 ## Libraries
 
+library(magrittr)
+library(qiime2R)
 library(readr)
 library(tidyverse)
 library(ggplot2)
@@ -101,19 +103,44 @@ contains_producer <- function(taxa, producers) {
 treatment_ancombc %<>%
   mutate(Species = sapply(Species, contains_producer, producers = micotoxin_producers))
 
+## Prepare for volcano
+
+logfc_thr <- 2
+qval_thr <- 0.05
+
+filtered_ancombc <- treatment_ancombc[(treatment_ancombc$FertilizationORG_lfc > logfc_thr |
+                                         treatment_ancombc$FertilizationORG_lfc < -logfc_thr) &
+                                        treatment_ancombc$FertilizationORG_q_val < qval_thr, ]
+
+sorted_desc <- filtered_ancombc[order(-filtered_ancombc$FertilizationORG_lfc), ]
+sorted_asc <- filtered_ancombc[order(filtered_ancombc$FertilizationORG_lfc), ]
+
+top_da <- head(sorted_desc, 10)
+bottom_da <- head(sorted_asc, 10)
+
+top_features <- c(top_da$Species, bottom_da$Species)
+
+
 ## Volcano plots
 
 pdf(file.path(outdir, "volcano_treatment_eco.pdf"))
 
-vp_treatment_eco <- treatment_ancombc %>%
+v_treatment_eco <- treatment_ancombc %>%
   EnhancedVolcano(lab = treatment_ancombc$Species,
                   x = "FertilizationORG_lfc",
                   y = "FertilizationORG_q_val",
-                  pCutoff = 1e-05,
+                  selectLab = top_features,
+                  pCutoff = 0.05,
                   FCcutoff = 2,
+                  title = NULL,
+                  subtitle = NULL,
+                  caption = NULL,
+                  ylab = bquote(~Log[10]~ "Q-value"),
+                  legendPosition = "top",
                   drawConnectors = TRUE,
-                  widthConnectors = 0.75)
+                  widthConnectors = 0.75,
+                  min.segment.length = 1)
 
-vp_treatment_eco
+v_treatment_eco
 
 dev.off()
