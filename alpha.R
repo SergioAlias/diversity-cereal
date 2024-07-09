@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-02                                       ║
-# ║ Last Modified  : 2024-07-05                                       ║
+# ║ Last Modified  : 2024-07-09                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -49,6 +49,8 @@ shannon_file_path <- file.path(project_dir,
                                "qiime2/diversity/shannon_vector.qza")
 simpson_file_path <- file.path(project_dir,
                                "qiime2/diversity/simpson_vector.qza")
+obs_feat_file_path <- file.path(project_dir,
+                               "qiime2/diversity/observed_features_vector.qza")
 
 shannon <- read_qza(shannon_file_path)
 shannon <- shannon$data %>% rownames_to_column("SampleID")
@@ -58,30 +60,34 @@ simpson <- read_qza(simpson_file_path)
 simpson <- simpson$data %>% rownames_to_column("SampleID")
 metadata %<>% left_join(simpson)
 
+obs_feat <- read_qza(obs_feat_file_path)
+obs_feat <- obs_feat$data %>% rownames_to_column("SampleID")
+metadata %<>% left_join(obs_feat)
+
 ## Colors and shapes
 
 source("/home/sergio/projects/diversity-cereal/colors.R")
 
 
-## Kruskal-Wallis
-
-kw_shannon <- kruskal.test(shannon_entropy ~ Location, data = metadata)
-pw_shannon <- pairwise.wilcox.test(x = metadata$shannon_entropy,
-                                   g = metadata$Location,
-                                   p.adjust.method = "holm")
-
-## Alpha boxplot
-
-### Shannon
+## Comparisons
 
 comparisons_treatment <- combn(unique(metadata$Treatment), 2, simplify = FALSE)
+
+
+## Alpha boxplots
+
+### Shannon
 
 pdf(file.path(outdir, "shannon_treatment.pdf"))
 
 shannon_t <- metadata %>%
   ggboxplot("Treatment", "shannon_entropy",
-            color = "Treatment", palette = treatment_colors,
-          add = "jitter", shape = "Treatment") +
+            color = "Treatment",
+            fill = "Treatment",
+            alpha = 0.1,
+            palette = treatment_colors,
+            add = "jitter",
+            shape = "Treatment") +
   scale_shape_manual(values = treatment_shapes, name = "Treatment") +
   ylab("Shannon") +
   stat_compare_means(label.y = 7.7) +
@@ -91,19 +97,22 @@ shannon_t <- metadata %>%
 
 shannon_t
 
+dev.off()
 
 ### Simpson
-
-dev.off()
 
 pdf(file.path(outdir, "simpson_treatment.pdf"))
 
 simpson_t <- metadata %>%
   ggboxplot("Treatment", "simpson",
-            color = "Treatment", palette = treatment_colors,
-            add = "jitter", shape = "Treatment") +
+            color = "Treatment",
+            fill = "Treatment",
+            alpha = 0.1,
+            palette = treatment_colors,
+            add = "jitter",
+            shape = "Treatment") +
   scale_shape_manual(values = treatment_shapes, name = "Treatment") +
-  ylab("Simpson") +
+  ylab("Inverse Simpson") +
   stat_compare_means(label.y = 0.992) +
   stat_compare_means(aes(label = after_stat(paste0('p = ', p.format, '\n', p.signif))),
                      comparisons = comparisons_treatment,
@@ -113,13 +122,37 @@ simpson_t
 
 dev.off()
 
+### Observed features
+
+pdf(file.path(outdir, "obs_feat_treatment.pdf"))
+
+obs_feat_t <- metadata %>%
+  ggboxplot("Treatment", "observed_features",
+            color = "Treatment",
+            fill = "Treatment",
+            alpha = 0.1,
+            palette = treatment_colors,
+            add = "jitter",
+            shape = "Treatment") +
+  scale_shape_manual(values = treatment_shapes, name = "Treatment") +
+  ylab("Observed features") +
+  stat_compare_means(label.y = 815) +
+  stat_compare_means(aes(label = after_stat(paste0('p = ', p.format, '\n', p.signif))),
+                     comparisons = comparisons_treatment,
+                     label.y = c(730, 770, 750))
+
+obs_feat_t
+
+dev.off()
 
 ### Grouped plots
 
 pdf(file.path(outdir, "patched_treatment.pdf"),
     width = 12)
 
-(shannon_t + theme(legend.position="none") + simpson_t + theme(legend.position="none") &
+(obs_feat_t + theme(legend.position="none") +
+ shannon_t + theme(legend.position="none") +
+ simpson_t + theme(legend.position="none") &
     theme(plot.tag.position = "topleft")) +
   plot_layout(axis_titles = "collect") +
   plot_annotation(tag_levels = 'A')
