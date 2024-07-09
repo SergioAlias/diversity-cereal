@@ -15,7 +15,6 @@ library(magrittr, include.only = "%<>%")
 library(qiime2R)
 library(readr)
 library(tidyverse)
-library(ggplot2)
 library(EnhancedVolcano)
 
 ## Functions

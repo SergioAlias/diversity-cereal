@@ -11,7 +11,6 @@
 
 ## Libraries
 
-library(magrittr, include.only = "%<>%")
 library(file2meco)
 library(microeco)
 library(ggplot2)

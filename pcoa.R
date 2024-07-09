@@ -15,7 +15,6 @@ library(rlang)
 library(magrittr, include.only = "%<>%")
 library(tidyverse)
 library(qiime2R)
-library(ggplot2)
 library(patchwork)
 
 

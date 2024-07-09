@@ -68,3 +68,4 @@ ggplot(esp) +
   coord_sf(xlim = c(-11, 6), ylim = c(35.5, 44.5), expand = TRUE)
 
 dev.off()
+
