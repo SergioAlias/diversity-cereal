@@ -16,3 +16,7 @@ movement_colors <- c(MIN ="#028900",
 movement_shapes <- c(MIN = 17,
                      YES = 15,
                      NO = 16)
+sample_map_colors <- c("#f1f1f1",
+                       "#ade0d6",
+                       "#04a472",
+                       "#046647")
