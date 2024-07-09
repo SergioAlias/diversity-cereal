@@ -11,7 +11,7 @@
 
 ## Libraries
 
-library(magrittr)
+library(magrittr, include.only = "%<>%")
 library(qiime2R)
 library(readr)
 library(tidyverse)

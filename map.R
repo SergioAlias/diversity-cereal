@@ -13,7 +13,7 @@
 
 library(sf)
 library(mapSpain)
-library(magrittr)
+library(magrittr, include.only = "%<>%")
 library(tidyverse)
 library(ggrepel)
 

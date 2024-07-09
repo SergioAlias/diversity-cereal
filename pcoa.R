@@ -12,7 +12,7 @@
 ## Libraries
 
 library(rlang)
-library(magrittr)
+library(magrittr, include.only = "%<>%")
 library(tidyverse)
 library(qiime2R)
 library(ggplot2)
