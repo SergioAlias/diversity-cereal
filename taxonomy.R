@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-01                                       ║
-# ║ Last Modified  : 2024-07-02                                       ║
+# ║ Last Modified  : 2024-07-09                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -32,7 +32,7 @@ cluster_path <- paste0("/run/user/1001/gvfs/sftp:host=",
 project_dir <- file.path(cluster_path,
                       "scratch/salias/projects",
                       project_name)
-outdir <- "/home/sergio/scratch/diversity-cereal"
+outdir <- "/home/sergio/scratch/diversity-cereal/taxonomy"
  
  
 dada2_file_path <- file.path(project_dir,
@@ -63,7 +63,8 @@ t_stacked_phylum <- trans_abund$new(dataset = meco,
                                     high_level = "Phylum",
                                     prefix = "c__")
 
-pdf(file.path(outdir, "barplot_class.pdf"))
+pdf(file.path(outdir, "barplot_class.pdf"),
+    width = 9)
 
 t_stacked_phylum$plot_bar(ggnested = TRUE,
                           high_level_add_other = TRUE,
