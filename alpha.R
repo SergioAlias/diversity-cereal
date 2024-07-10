@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-02                                       ║
-# ║ Last Modified  : 2024-07-09                                       ║
+# ║ Last Modified  : 2024-07-10                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -49,8 +49,8 @@ shannon_file_path <- file.path(project_dir,
                                "qiime2/diversity/shannon_vector.qza")
 simpson_file_path <- file.path(project_dir,
                                "qiime2/diversity/simpson_vector.qza")
-obs_feat_file_path <- file.path(project_dir,
-                               "qiime2/diversity/observed_features_vector.qza")
+chao1_file_path <- file.path(project_dir,
+                               "qiime2/diversity/chao1_vector.qza")
 
 shannon <- read_qza(shannon_file_path)
 shannon <- shannon$data %>% rownames_to_column("SampleID")
@@ -60,9 +60,9 @@ simpson <- read_qza(simpson_file_path)
 simpson <- simpson$data %>% rownames_to_column("SampleID")
 metadata %<>% left_join(simpson)
 
-obs_feat <- read_qza(obs_feat_file_path)
-obs_feat <- obs_feat$data %>% rownames_to_column("SampleID")
-metadata %<>% left_join(obs_feat)
+chao1 <- read_qza(chao1_file_path)
+chao1 <- chao1$data %>% rownames_to_column("SampleID")
+metadata %<>% left_join(chao1)
 
 ## Colors and shapes
 
@@ -122,12 +122,12 @@ simpson_t
 
 dev.off()
 
-### Observed features
+### Chao1
 
-pdf(file.path(outdir, "obs_feat_treatment.pdf"))
+pdf(file.path(outdir, "chao1_treatment.pdf"))
 
-obs_feat_t <- metadata %>%
-  ggboxplot("Treatment", "observed_features",
+chao1_t <- metadata %>%
+  ggboxplot("Treatment", "chao1",
             color = "Treatment",
             fill = "Treatment",
             alpha = 0.1,
@@ -135,13 +135,13 @@ obs_feat_t <- metadata %>%
             add = "jitter",
             shape = "Treatment") +
   scale_shape_manual(values = treatment_shapes, name = "Treatment") +
-  ylab("Observed features") +
+  ylab("Chao1") +
   stat_compare_means(label.y = 815) +
   stat_compare_means(aes(label = after_stat(paste0('p = ', p.format, '\n', p.signif))),
                      comparisons = comparisons_treatment,
                      label.y = c(730, 770, 750))
 
-obs_feat_t
+chao1_t
 
 dev.off()
 
@@ -150,7 +150,7 @@ dev.off()
 pdf(file.path(outdir, "patched_treatment.pdf"),
     width = 12)
 
-(obs_feat_t + theme(legend.position="none") +
+(chao1_t + theme(legend.position="none") +
  shannon_t + theme(legend.position="none") +
  simpson_t + theme(legend.position="none") &
     theme(plot.tag.position = "topleft")) +
