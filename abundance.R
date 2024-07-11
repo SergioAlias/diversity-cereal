@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-04                                       ║
-# ║ Last Modified  : 2024-07-08                                       ║
+# ║ Last Modified  : 2024-07-11                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -16,6 +16,7 @@ library(qiime2R)
 library(readr)
 library(tidyverse)
 library(EnhancedVolcano)
+library(patchwork)
 
 ## Functions
 
@@ -40,6 +41,74 @@ import_ancombc <- function(qza_path) {
   return(merged_df)
 }
 
+contains_producer <- function(taxa, producers) {
+  if (any(str_detect(taxa, producers))) {
+    return(taxa %>% str_remove("^[a-z]__") %>% str_replace_all("_", " "))
+  } else {
+    return(NA)
+  }
+}
+
+volcanoFromAncombc <- function(qza_path,
+                               log2fc_col,
+                               pval_col,
+                               up_color,
+                               down_color,
+                               up_shape,
+                               down_shape,
+                               up_legend,
+                               down_legend,
+                               ...,
+                               lab_col = NA,
+                               log2fc_cutoff = 2,
+                               pval_cutoff = 0.05,
+                               ns_color = "black",
+                               ns_shape = 4,
+                               ns_legend = "NS",
+                               taxonomy_df = taxonomy,
+                               micotoxin_producers_vector = micotoxin_producers)
+{
+  ancombc <- import_ancombc(qza_path)
+  ancombc %<>% left_join(taxonomy_df)
+  ancombc$Producers <- ancombc$Species
+  # ancombc %<>%
+  #   mutate(Producers = sapply(Producers, contains_producer, producers = micotoxin_producers_vector))
+  
+  keyvals_col <- ifelse(
+    ancombc[[log2fc_col]] < -log2fc_cutoff & ancombc[[pval_col]] < pval_cutoff, down_color,
+    ifelse(ancombc[[log2fc_col]] > log2fc_cutoff & ancombc[[pval_col]] < pval_cutoff, up_color,
+           ns_color))
+  keyvals_col[is.na(keyvals_col)] <- ns_color
+  names(keyvals_col)[keyvals_col == up_color] <- up_legend
+  names(keyvals_col)[keyvals_col == ns_color] <- ns_legend
+  names(keyvals_col)[keyvals_col == down_color] <- down_legend
+  
+  keyvals_shape <- keyvals_col
+  keyvals_shape[keyvals_shape == up_color] <- up_shape
+  keyvals_shape[keyvals_shape == ns_color] <- ns_shape
+  keyvals_shape[keyvals_shape == down_color] <- down_shape
+  keyvals_shape %<>% as.integer()
+  names(keyvals_shape) <- names(keyvals_col)
+  
+  v_plot <- ancombc %>%
+    EnhancedVolcano(lab = {{lab_col}},
+                    x = {{log2fc_col}},
+                    y = {{pval_col}},
+                    pCutoff = pval_cutoff,
+                    FCcutoff = log2fc_cutoff,
+                    colCustom = keyvals_col,
+                    shapeCustom = keyvals_shape,
+                    ...) +
+    guides(color = guide_legend("Combined Legend",
+                                override.aes = list(alpha=1)),
+           shape = guide_legend("Combined Legend")) +
+    theme_classic() +
+    theme(legend.title=element_blank(),
+          legend.position="top")
+  
+  return(v_plot)
+}
+
 
 ## Import QIIME 2 files
 
@@ -55,10 +124,10 @@ project_dir <- file.path(cluster_path,
                          project_name)
 outdir <- "/home/sergio/scratch/diversity-cereal/abundance"
 
-treatment_file_path <- file.path(project_dir,
-                               "qiime2/abundance/Fertilization/level_7_ancombc.qza")
-
-treatment_ancombc <- import_ancombc(treatment_file_path)
+treatment_rot_file_path <- file.path(cluster_path,
+                                 "scratch/salias/sporeflow_sandbox/micofood_24/Fertilization/filtered_ancombc.qza")
+treatment_con_file_path <- file.path(project_dir,
+                                     "qiime2/abundance/Fertilization/filtered_ancombc.qza")
 
 taxonomy_file_path <- file.path(project_dir,
                                 "qiime2/taxonomy/taxonomy.qza")
@@ -67,79 +136,97 @@ taxonomy <- read_qza(taxonomy_file_path)$data
 
 taxonomy %<>% parse_taxonomy() %>% rownames_to_column("id")
 
-metadata <- read.csv(file.path(cluster_path,
-                               "home/salias/projects/sporeflow/metadata.tsv"),
-                     sep = "\t")
-
-colnames(metadata)[1] <- "SampleID"
-
-metadata %<>%
-  mutate(Treatment = case_when(
-    Fertilization == "MFI" ~ "CON",
-    Fertilization == "ORG" ~ "ECO",
-    Fertilization == "ROT" ~ "ROT"
-  ))
-
-treatment_ancombc %<>%
-  mutate(Species = sapply(str_split(id, ";"), function(x) tail(x, 1)))
-# treatment_ancombc %<>% left_join(taxonomy)
-
 micotoxin_producers <- c("Fusarium",
                          "Aspergillus",
                          "Penicillium",
                          "Alternaria",
                          "Claviceps")
+## Colors and shapes
 
-
-contains_producer <- function(taxa, producers) {
-  if (any(str_detect(taxa, producers))) {
-    return(taxa %>% str_remove("^[a-z]__") %>% str_replace_all("_", " "))
-  } else {
-    return(NA)
-  }
-}
-
-treatment_ancombc %<>%
-  mutate(Species = sapply(Species, contains_producer, producers = micotoxin_producers))
-
-## Prepare for volcano
-
-logfc_thr <- 2
-qval_thr <- 0.05
-
-filtered_ancombc <- treatment_ancombc[(treatment_ancombc$FertilizationORG_lfc > logfc_thr |
-                                         treatment_ancombc$FertilizationORG_lfc < -logfc_thr) &
-                                        treatment_ancombc$FertilizationORG_q_val < qval_thr, ]
-
-sorted_desc <- filtered_ancombc[order(-filtered_ancombc$FertilizationORG_lfc), ]
-sorted_asc <- filtered_ancombc[order(filtered_ancombc$FertilizationORG_lfc), ]
-
-top_da <- head(sorted_desc, 10)
-bottom_da <- head(sorted_asc, 10)
-
-top_features <- c(top_da$Species, bottom_da$Species)
+source("/home/sergio/projects/diversity-cereal/colors.R")
 
 
 ## Volcano plots
 
-pdf(file.path(outdir, "volcano_treatment_eco.pdf"))
+### ECO vs ROT
 
-v_treatment_eco <- treatment_ancombc %>%
-  EnhancedVolcano(lab = treatment_ancombc$Species,
-                  x = "FertilizationORG_lfc",
-                  y = "FertilizationORG_q_val",
-                  selectLab = top_features,
-                  pCutoff = 0.05,
-                  FCcutoff = 2,
-                  title = NULL,
-                  subtitle = NULL,
-                  caption = NULL,
-                  ylab = bquote(~Log[10]~ "Q-value"),
-                  legendPosition = "top",
-                  drawConnectors = TRUE,
-                  widthConnectors = 0.75,
-                  min.segment.length = 1)
+pdf(file.path(outdir, "volcano_treatment_eco_vs_rot.pdf"))
 
-v_treatment_eco
+v_treatment_eco_vs_rot <- volcanoFromAncombc(qza_path = treatment_rot_file_path,
+                             log2fc_col = "FertilizationORG_lfc",
+                             pval_col = "FertilizationORG_q_val",
+                             up_color = treatment_colors[["ECO"]],
+                             down_color = treatment_colors[["ROT"]],
+                             up_shape = treatment_shapes[["ECO"]],
+                             down_shape = treatment_shapes[["ROT"]],
+                             up_legend = "DA (ECO)",
+                             down_legend = "DA (ROT)",
+                             ylab = bquote(~Log[10]~ "Q-value"),
+                             title = NULL,
+                             subtitle = NULL,
+                             caption = NULL)
+
+v_treatment_eco_vs_rot
 
 dev.off()
+
+### CON vs ROT
+
+pdf(file.path(outdir, "volcano_treatment_con_vs_rot.pdf"))
+
+v_treatment_con_vs_rot <- volcanoFromAncombc(qza_path = treatment_rot_file_path,
+                                      log2fc_col = "FertilizationMFI_lfc",
+                                      pval_col = "FertilizationMFI_q_val",
+                                      up_color = treatment_colors[["CON"]],
+                                      down_color = treatment_colors[["ROT"]],
+                                      up_shape = treatment_shapes[["CON"]],
+                                      down_shape = treatment_shapes[["ROT"]],
+                                      up_legend = "DA (CON)",
+                                      down_legend = "DA (ROT)",
+                                      ylab = bquote(~Log[10]~ "Q-value"),
+                                      title = NULL,
+                                      subtitle = NULL,
+                                      caption = NULL)
+
+v_treatment_con_vs_rot
+
+dev.off()
+
+### ECO vs CON
+
+pdf(file.path(outdir, "volcano_treatment_eco_vs_con.pdf"))
+
+v_treatment_eco_vs_con <- volcanoFromAncombc(qza_path = treatment_con_file_path,
+                                             log2fc_col = "FertilizationORG_lfc",
+                                             pval_col = "FertilizationORG_q_val",
+                                             up_color = treatment_colors[["ECO"]],
+                                             down_color = treatment_colors[["CON"]],
+                                             up_shape = treatment_shapes[["ECO"]],
+                                             down_shape = treatment_shapes[["CON"]],
+                                             up_legend = "DA (ECO)",
+                                             down_legend = "DA (CON)",
+                                             ylab = bquote(~Log[10]~ "Q-value"),
+                                             title = NULL,
+                                             subtitle = NULL,
+                                             caption = NULL)
+
+v_treatment_eco_vs_con
+
+dev.off()
+
+### Grouped plots
+
+pdf(file.path(outdir, "patched_abundance_treatment.pdf"),
+    width = 12)
+
+(v_treatment_eco_vs_rot +
+    v_treatment_con_vs_rot +
+    v_treatment_eco_vs_con &
+    theme(plot.tag.position = "topleft")) +
+  plot_layout(axis_titles = "collect") + # ,
+              # guides = "collect") +
+  plot_annotation(tag_levels = 'A')
+
+dev.off()
+
+
