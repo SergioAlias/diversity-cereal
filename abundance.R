@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-04                                       ║
-# ║ Last Modified  : 2024-07-11                                       ║
+# ║ Last Modified  : 2024-07-17                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -124,10 +124,10 @@ project_dir <- file.path(cluster_path,
                          project_name)
 outdir <- "/home/sergio/scratch/diversity-cereal/abundance"
 
-treatment_rot_file_path <- file.path(cluster_path,
-                                 "scratch/salias/sporeflow_sandbox/micofood_24/Fertilization/filtered_ancombc.qza")
+treatment_rot_file_path <- file.path(project_dir,
+                                     "qiime2/abundance/Fertilization_ROT/filtered_ancombc.qza")
 treatment_con_file_path <- file.path(project_dir,
-                                     "qiime2/abundance/Fertilization/filtered_ancombc.qza")
+                                     "qiime2/abundance/Fertilization_MFI/filtered_ancombc.qza")
 
 taxonomy_file_path <- file.path(project_dir,
                                 "qiime2/taxonomy/taxonomy.qza")
@@ -164,7 +164,9 @@ v_treatment_eco_vs_rot <- volcanoFromAncombc(qza_path = treatment_rot_file_path,
                              ylab = bquote(~Log[10]~ "Q-value"),
                              title = NULL,
                              subtitle = NULL,
-                             caption = NULL)
+                             caption = NULL,
+                             xlim = c(-10, 10),
+                             ylim = c(0, 300))
 
 v_treatment_eco_vs_rot
 
@@ -186,7 +188,9 @@ v_treatment_con_vs_rot <- volcanoFromAncombc(qza_path = treatment_rot_file_path,
                                       ylab = bquote(~Log[10]~ "Q-value"),
                                       title = NULL,
                                       subtitle = NULL,
-                                      caption = NULL)
+                                      caption = NULL,
+                                      xlim = c(-10, 10),
+                                      ylim = c(0, 300))
 
 v_treatment_con_vs_rot
 
@@ -208,7 +212,9 @@ v_treatment_eco_vs_con <- volcanoFromAncombc(qza_path = treatment_con_file_path,
                                              ylab = bquote(~Log[10]~ "Q-value"),
                                              title = NULL,
                                              subtitle = NULL,
-                                             caption = NULL)
+                                             caption = NULL,
+                                             xlim = c(-10, 10),
+                                             ylim = c(0, 300))
 
 v_treatment_eco_vs_con
 
