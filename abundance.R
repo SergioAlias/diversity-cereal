@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-04                                       ║
-# ║ Last Modified  : 2024-07-17                                       ║
+# ║ Last Modified  : 2024-07-19                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -20,26 +20,7 @@ library(patchwork)
 
 ## Functions
 
-processAncomCsv <- function(file_path) {
-  df <- read_csv(file_path) %>% 
-    select(-matches("\\(Intercept\\)")) %>%
-    rename_with(~ if_else(.x == "id", .x, paste0(.x,
-                                                 "_",
-                                                 sub("_slice\\.csv$",
-                                                     "",
-                                                     basename(file_path)))))
-  return(df)
-}
-
-import_ancombc <- function(qza_path) {
-  csv_name <- unzip(qza_path, list = TRUE, exdir = tempdir()) %>%
-    filter(str_detect(.data$Name, ".csv")) %>% {.$Name}
-  unzip(qza_path, files = csv_name, exdir = tempdir())
-  csv_files <- setNames(lapply(file.path(tempdir(), csv_name), processAncomCsv),
-                        sub("_slice\\.csv$", "", basename(csv_name)))
-  merged_df <- reduce(csv_files, full_join, by = "id")
-  return(merged_df)
-}
+source("/home/sergio/projects/diversity-cereal/parse_ancombc.R")
 
 contains_producer <- function(taxa, producers) {
   if (any(str_detect(taxa, producers))) {
