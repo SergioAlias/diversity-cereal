@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-02                                       ║
-# ║ Last Modified  : 2024-07-05                                       ║
+# ║ Last Modified  : 2024-10-12                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -30,7 +30,7 @@ cluster_path <- paste0("/run/user/1001/gvfs/sftp:host=",
 project_dir <- file.path(cluster_path,
                          "scratch/salias/projects",
                          project_name)
-outdir <- "/home/sergio/scratch/diversity-cereal"
+outdir <- "/home/sergio/scratch/diversity-cereal/beta"
 
 jaccard_file_path <- file.path(project_dir,
                              "qiime2/diversity/jaccard_pcoa_results.qza")
@@ -78,7 +78,8 @@ source("/home/sergio/projects/diversity-cereal/colors.R")
 
 ### Jaccard
 
-pdf(file.path(outdir, "pcoa_jaccard_location.pdf"))
+pdf(file.path(outdir, "pcoa_jaccard_location.pdf"),
+    width = 10)
 
 p_j1 <- jaccard$data$Vectors %>%
   select(SampleID, PC1, PC2) %>%
@@ -98,7 +99,8 @@ p_j1
 dev.off()
 
 
-pdf(file.path(outdir, "pcoa_jaccard_treatment.pdf"))
+pdf(file.path(outdir, "pcoa_jaccard_treatment.pdf"),
+    width = 10)
 
 p_j2 <- jaccard$data$Vectors %>%
   select(SampleID, PC1, PC2) %>%
@@ -117,7 +119,8 @@ p_j2
 
 dev.off()
 
-pdf(file.path(outdir, "pcoa_jaccard_movement.pdf"))
+pdf(file.path(outdir, "pcoa_jaccard_movement.pdf"),
+    width = 10)
 
 p_j3 <- jaccard$data$Vectors %>%
   select(SampleID, PC1, PC2) %>%
@@ -138,7 +141,8 @@ dev.off()
 
 ### Bray-Curtis
 
-pdf(file.path(outdir, "pcoa_bray_curtis_location.pdf"))
+pdf(file.path(outdir, "pcoa_bray_curtis_location.pdf"),
+    width = 10)
 
 p_b1 <- bray_curtis$data$Vectors %>%
   select(SampleID, PC1, PC2) %>%
@@ -158,7 +162,8 @@ p_b1
 dev.off()
 
 
-pdf(file.path(outdir, "pcoa_bray_curtis_treatment.pdf"))
+pdf(file.path(outdir, "pcoa_bray_curtis_treatment.pdf"),
+    width = 10)
 
 p_b2 <- bray_curtis$data$Vectors %>%
   select(SampleID, PC1, PC2) %>%
@@ -180,7 +185,8 @@ dev.off()
 
 ### Aitchison
 
-pdf(file.path(outdir, "pcoa_aitchison_location.pdf"))
+pdf(file.path(outdir, "pcoa_aitchison_location.pdf"),
+    width = 10)
 
 p_a1 <- aitchison$data$Vectors %>%
   select(SampleID, PC1, PC2) %>%
@@ -200,7 +206,8 @@ p_a1
 dev.off()
 
 
-pdf(file.path(outdir, "pcoa_aitchison_treatment.pdf"))
+pdf(file.path(outdir, "pcoa_aitchison_treatment.pdf"),
+    width = 10)
 
 p_a2 <- aitchison$data$Vectors %>%
   select(SampleID, PC1, PC2) %>%
