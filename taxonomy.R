@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-01                                       ║
-# ║ Last Modified  : 2024-07-09                                       ║
+# ║ Last Modified  : 2024-09-12                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -37,8 +37,7 @@ outdir <- "/home/sergio/scratch/diversity-cereal/taxonomy"
  
 dada2_file_path <- file.path(project_dir,
                              "qiime2/feature_tables/filtered_table.qza")
-metadata_file_path <- file.path(cluster_path,
-                                "home/salias/projects/sporeflow/metadata.tsv")
+metadata_file_path <- "/home/sergio/scratch/diversity-cereal/metadata.tsv"
 taxonomy_file_path <- file.path(project_dir,
                                 "qiime2/taxonomy/taxonomy.qza")
 
