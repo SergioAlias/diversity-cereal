@@ -1,6 +1,6 @@
 location_colors <- c(FUE = "#df982c",
                      RIO = "#59b2bf",
-                     ZAM = "#ff10f0")
+                     ZAM = "#c437bb")
 location_shapes <- c(FUE = 17,
                      RIO = 15,
                      ZAM = 16)
