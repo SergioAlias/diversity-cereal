@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-02                                       ║
-# ║ Last Modified  : 2024-07-10                                       ║
+# ║ Last Modified  : 2024-09-16                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -72,6 +72,7 @@ source("/home/sergio/projects/diversity-cereal/colors.R")
 ## Comparisons
 
 comparisons_treatment <- combn(unique(metadata$Treatment), 2, simplify = FALSE)
+comparisons_location <- combn(unique(metadata$Location), 2, simplify = FALSE)
 
 
 ## Alpha boxplots
@@ -99,6 +100,28 @@ shannon_t
 
 dev.off()
 
+
+pdf(file.path(outdir, "shannon_location.pdf"))
+
+shannon_l <- metadata %>%
+  ggboxplot("Location", "shannon_entropy",
+            color = "Location",
+            fill = "Location",
+            alpha = 0.1,
+            palette = location_colors,
+            add = "jitter",
+            shape = "Location") +
+  scale_shape_manual(values = location_shapes, name = "Location") +
+  ylab("Shannon") +
+  stat_compare_means(label.y = 7.7) +
+  stat_compare_means(aes(label = after_stat(paste0('p = ', p.format, '\n', p.signif))),
+                     comparisons = comparisons_location,
+                     label.y = c(7.3, 7.5, 7.4))
+
+shannon_l
+
+dev.off()
+
 ### Simpson
 
 pdf(file.path(outdir, "simpson_treatment.pdf"))
@@ -119,6 +142,28 @@ simpson_t <- metadata %>%
                      label.y = c(0.982, 0.987, 0.9845))
 
 simpson_t
+
+dev.off()
+
+
+pdf(file.path(outdir, "simpson_location.pdf"))
+
+simpson_l <- metadata %>%
+  ggboxplot("Location", "simpson",
+            color = "Location",
+            fill = "Location",
+            alpha = 0.1,
+            palette = location_colors,
+            add = "jitter",
+            shape = "Location") +
+  scale_shape_manual(values = location_shapes, name = "Location") +
+  ylab("Inverse Simpson") +
+  stat_compare_means(label.y = 0.992) +
+  stat_compare_means(aes(label = after_stat(paste0('p = ', p.format, '\n', p.signif))),
+                     comparisons = comparisons_location,
+                     label.y = c(0.982, 0.987, 0.9845))
+
+simpson_l
 
 dev.off()
 
@@ -145,6 +190,28 @@ chao1_t
 
 dev.off()
 
+
+pdf(file.path(outdir, "chao1_location.pdf"))
+
+chao1_l <- metadata %>%
+  ggboxplot("Location", "chao1",
+            color = "Location",
+            fill = "Location",
+            alpha = 0.1,
+            palette = location_colors,
+            add = "jitter",
+            shape = "Location") +
+  scale_shape_manual(values = location_shapes, name = "Location") +
+  ylab("Chao1") +
+  stat_compare_means(label.y = 815) +
+  stat_compare_means(aes(label = after_stat(paste0('p = ', p.format, '\n', p.signif))),
+                     comparisons = comparisons_location,
+                     label.y = c(730, 770, 750))
+
+chao1_l
+
+dev.off()
+
 ### Grouped plots
 
 pdf(file.path(outdir, "patched_treatment.pdf"),
@@ -159,3 +226,15 @@ pdf(file.path(outdir, "patched_treatment.pdf"),
 
 dev.off()
 
+
+pdf(file.path(outdir, "patched_location.pdf"),
+    width = 12)
+
+(chao1_l + theme(legend.position="none") +
+    shannon_l + theme(legend.position="none") +
+    simpson_l + theme(legend.position="none") &
+    theme(plot.tag.position = "topleft")) +
+  plot_layout(axis_titles = "collect") +
+  plot_annotation(tag_levels = 'A')
+
+dev.off()
