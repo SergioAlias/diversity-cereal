@@ -79,7 +79,8 @@ source("/home/sergio/projects/diversity-cereal/colors.R")
 ### Jaccard
 
 pdf(file.path(outdir, "pcoa_jaccard_location.pdf"),
-    width = 10)
+    height = 5,
+    width = 7)
 
 p_j1 <- jaccard$data$Vectors %>%
   select(SampleID, PC1, PC2) %>%
@@ -100,7 +101,8 @@ dev.off()
 
 
 pdf(file.path(outdir, "pcoa_jaccard_treatment.pdf"),
-    width = 10)
+    height = 5,
+    width = 7)
 
 p_j2 <- jaccard$data$Vectors %>%
   select(SampleID, PC1, PC2) %>%
@@ -120,7 +122,8 @@ p_j2
 dev.off()
 
 pdf(file.path(outdir, "pcoa_jaccard_movement.pdf"),
-    width = 10)
+    height = 5,
+    width = 7)
 
 p_j3 <- jaccard$data$Vectors %>%
   select(SampleID, PC1, PC2) %>%
@@ -142,7 +145,8 @@ dev.off()
 ### Bray-Curtis
 
 pdf(file.path(outdir, "pcoa_bray_curtis_location.pdf"),
-    width = 10)
+    height = 5,
+    width = 7)
 
 p_b1 <- bray_curtis$data$Vectors %>%
   select(SampleID, PC1, PC2) %>%
@@ -163,7 +167,8 @@ dev.off()
 
 
 pdf(file.path(outdir, "pcoa_bray_curtis_treatment.pdf"),
-    width = 10)
+    height = 5,
+    width = 7)
 
 p_b2 <- bray_curtis$data$Vectors %>%
   select(SampleID, PC1, PC2) %>%
@@ -186,7 +191,8 @@ dev.off()
 ### Aitchison
 
 pdf(file.path(outdir, "pcoa_aitchison_location.pdf"),
-    width = 10)
+    height = 5,
+    width = 7)
 
 p_a1 <- aitchison$data$Vectors %>%
   select(SampleID, PC1, PC2) %>%
@@ -207,7 +213,8 @@ dev.off()
 
 
 pdf(file.path(outdir, "pcoa_aitchison_treatment.pdf"),
-    width = 10)
+    height = 5,
+    width = 7)
 
 p_a2 <- aitchison$data$Vectors %>%
   select(SampleID, PC1, PC2) %>%
