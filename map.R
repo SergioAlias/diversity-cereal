@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-08                                       ║
-# ║ Last Modified  : 2024-07-09                                       ║
+# ║ Last Modified  : 2024-07-24                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -27,16 +27,15 @@ source("/home/sergio/projects/diversity-cereal/colors.R")
 esp <- esp_get_prov(moveCAN = FALSE)
 esp %<>%
   mutate(n_samples = case_when(
-    iso2.prov.code == "ES-GR" ~ "1",
     iso2.prov.code == "ES-VA" ~ "2",
-    iso2.prov.code == "ES-ZA" ~ "3",
+    iso2.prov.code == "ES-ZA" ~ "4",
     .default = "0"
   ))
 
 locations <- data.frame(
-  lng = c(-4.21, -5.38, -4.70),
-  lat = c(37.15, 41.25, 41.7),
-  ID = c("Riofrío (Granada)\n· S14 (ROT)",
+  lng = c(-6.10, -5.38, -4.70),
+  lat = c(41.48, 41.25, 41.7),
+  ID = c("Riofrío (Zamora)\n· S14 (ROT)",
          "Fuentelapeña (Zamora)\n· S15 (ECO)\n· S16 (ECO)\n· S17 (CON)",
          "Zamadueñas (Valladolid)\n· S18 (CON)\n· S19 (CON)"))
 
@@ -65,7 +64,7 @@ ggplot(esp) +
   theme(panel.grid.major = element_line(color = gray(0.5), linetype = "dashed", 
                                         size = 0.2),
         panel.background = element_rect(fill = "aliceblue")) +
-  coord_sf(xlim = c(-11, 6), ylim = c(35.5, 44.5), expand = TRUE)
+  coord_sf(xlim = c(-11, 6), ylim = c(35.5, 44.5), expand = TRUE) # + theme_void()
 
 dev.off()
 
