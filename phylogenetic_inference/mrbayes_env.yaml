@@ -1,0 +1,9 @@
+name: mrbayes_env
+channels:
+    - bioconda
+    - conda-forge
+    - defaults
+dependencies:
+    - mrbayes=3.2.7
+    - beagle-lib=3.1.2
+    
