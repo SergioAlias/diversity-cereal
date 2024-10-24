@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-04                                       ║
-# ║ Last Modified  : 2024-07-19                                       ║
+# ║ Last Modified  : 2024-10-24                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -22,14 +22,6 @@ library(patchwork)
 
 source("/home/sergio/projects/diversity-cereal/parse_ancombc.R")
 
-contains_producer <- function(taxa, producers) {
-  if (any(str_detect(taxa, producers))) {
-    return(taxa %>% str_remove("^[a-z]__") %>% str_replace_all("_", " "))
-  } else {
-    return(NA)
-  }
-}
-
 volcanoFromAncombc <- function(qza_path,
                                log2fc_col,
                                pval_col,
@@ -46,14 +38,10 @@ volcanoFromAncombc <- function(qza_path,
                                ns_color = "black",
                                ns_shape = 4,
                                ns_legend = "NS",
-                               taxonomy_df = taxonomy,
-                               micotoxin_producers_vector = micotoxin_producers)
+                               taxonomy_df = taxonomy)
 {
   ancombc <- import_ancombc(qza_path)
   ancombc %<>% left_join(taxonomy_df)
-  ancombc$Producers <- ancombc$Species
-  # ancombc %<>%
-  #   mutate(Producers = sapply(Producers, contains_producer, producers = micotoxin_producers_vector))
   
   keyvals_col <- ifelse(
     ancombc[[log2fc_col]] < -log2fc_cutoff & ancombc[[pval_col]] < pval_cutoff, down_color,
@@ -117,11 +105,6 @@ taxonomy <- read_qza(taxonomy_file_path)$data
 
 taxonomy %<>% parse_taxonomy() %>% rownames_to_column("id")
 
-micotoxin_producers <- c("Fusarium",
-                         "Aspergillus",
-                         "Penicillium",
-                         "Alternaria",
-                         "Claviceps")
 ## Colors and shapes
 
 source("/home/sergio/projects/diversity-cereal/colors.R")
