@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-02                                       ║
-# ║ Last Modified  : 2024-09-16                                       ║
+# ║ Last Modified  : 2024-10-28                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -20,7 +20,8 @@ library(patchwork)
 
 ## Import QIIME 2 files
 
-project_name <- "micofood_24"
+project_name <- "cereal_16S"
+amplicon <- "16S" # ITS or 16S
 
 readRenviron("/home/sergio/Renvs/.RenvBrigit")
 brigit_IP <- Sys.getenv("IP_ADDRESS")
@@ -30,7 +31,7 @@ cluster_path <- paste0("/run/user/1001/gvfs/sftp:host=",
 project_dir <- file.path(cluster_path,
                          "scratch/salias/projects",
                          project_name)
-outdir <- "/home/sergio/scratch/diversity-cereal/alpha"
+outdir <- "/home/sergio/scratch/diversity-cereal-16S/alpha"
 
 metadata <- read.csv(file.path(cluster_path,
                                "home/salias/projects/sporeflow/metadata.tsv"),
@@ -42,7 +43,9 @@ metadata %<>%
   mutate(Treatment = case_when(
     Fertilization == "MFI" ~ "CON",
     Fertilization == "ORG" ~ "ECO",
-    Fertilization == "ROT" ~ "ROT"
+    Fertilization == "ROT" ~ "ROT",
+    Fertilization == "CON" ~ "CON",
+    Fertilization == "ECO" ~ "ECO"
   ))
 
 shannon_file_path <- file.path(project_dir,
@@ -77,6 +80,23 @@ comparisons_location <- combn(unique(metadata$Location), 2, simplify = FALSE)
 
 ## Alpha boxplots
 
+if (amplicon == "ITS"){
+  shannon_pos_stat <- 7.7
+  shannon_pos_stat_paired <- c(7.3, 7.5, 7.4)
+  simpson_pos_stat <- 0.992
+  simpson_pos_stat_paired <- c(0.982, 0.987, 0.9845)
+  chao1_pos_stat <- 815
+  chao1_pos_stat_paired <- c(730, 770, 750)
+}
+if (amplicon == "16S"){
+  shannon_pos_stat <- 11.2
+  shannon_pos_stat_paired <- c(10.55, 10.7, 10.625)
+  simpson_pos_stat <- 0.99885
+  simpson_pos_stat_paired <- c(0.99852, 0.99866, 0.99859)
+  chao1_pos_stat <- 5500
+  chao1_pos_stat_paired <- c(3100, 3500, 3300)
+}
+
 ### Shannon
 
 pdf(file.path(outdir, "shannon_treatment.pdf"))
@@ -91,10 +111,10 @@ shannon_t <- metadata %>%
             shape = "Treatment") +
   scale_shape_manual(values = treatment_shapes, name = "Treatment") +
   ylab("Shannon") +
-  stat_compare_means(label.y = 7.7) +
+  stat_compare_means(label.y = shannon_pos_stat) +
   stat_compare_means(aes(label = after_stat(paste0('p = ', p.format, '\n', p.signif))),
                      comparisons = comparisons_treatment,
-                     label.y = c(7.3, 7.5, 7.4))
+                     label.y = shannon_pos_stat_paired)
 
 shannon_t
 
@@ -113,10 +133,10 @@ shannon_l <- metadata %>%
             shape = "Location") +
   scale_shape_manual(values = location_shapes, name = "Location") +
   ylab("Shannon") +
-  stat_compare_means(label.y = 7.7) +
+  stat_compare_means(label.y = shannon_pos_stat) +
   stat_compare_means(aes(label = after_stat(paste0('p = ', p.format, '\n', p.signif))),
                      comparisons = comparisons_location,
-                     label.y = c(7.3, 7.5, 7.4))
+                     label.y = shannon_pos_stat_paired)
 
 shannon_l
 
@@ -136,10 +156,10 @@ simpson_t <- metadata %>%
             shape = "Treatment") +
   scale_shape_manual(values = treatment_shapes, name = "Treatment") +
   ylab("Inverse Simpson") +
-  stat_compare_means(label.y = 0.992) +
+  stat_compare_means(label.y = simpson_pos_stat) +
   stat_compare_means(aes(label = after_stat(paste0('p = ', p.format, '\n', p.signif))),
                      comparisons = comparisons_treatment,
-                     label.y = c(0.982, 0.987, 0.9845))
+                     label.y = simpson_pos_stat_paired)
 
 simpson_t
 
@@ -158,10 +178,10 @@ simpson_l <- metadata %>%
             shape = "Location") +
   scale_shape_manual(values = location_shapes, name = "Location") +
   ylab("Inverse Simpson") +
-  stat_compare_means(label.y = 0.992) +
+  stat_compare_means(label.y = simpson_pos_stat) +
   stat_compare_means(aes(label = after_stat(paste0('p = ', p.format, '\n', p.signif))),
                      comparisons = comparisons_location,
-                     label.y = c(0.982, 0.987, 0.9845))
+                     label.y = simpson_pos_stat_paired)
 
 simpson_l
 
@@ -181,10 +201,10 @@ chao1_t <- metadata %>%
             shape = "Treatment") +
   scale_shape_manual(values = treatment_shapes, name = "Treatment") +
   ylab("Chao1") +
-  stat_compare_means(label.y = 815) +
+  stat_compare_means(label.y = chao1_pos_stat) +
   stat_compare_means(aes(label = after_stat(paste0('p = ', p.format, '\n', p.signif))),
                      comparisons = comparisons_treatment,
-                     label.y = c(730, 770, 750))
+                     label.y = chao1_pos_stat_paired)
 
 chao1_t
 
@@ -203,10 +223,10 @@ chao1_l <- metadata %>%
             shape = "Location") +
   scale_shape_manual(values = location_shapes, name = "Location") +
   ylab("Chao1") +
-  stat_compare_means(label.y = 815) +
+  stat_compare_means(label.y = chao1_pos_stat) +
   stat_compare_means(aes(label = after_stat(paste0('p = ', p.format, '\n', p.signif))),
                      comparisons = comparisons_location,
-                     label.y = c(730, 770, 750))
+                     label.y = chao1_pos_stat_paired)
 
 chao1_l
 
@@ -238,3 +258,4 @@ pdf(file.path(outdir, "patched_location.pdf"),
   plot_annotation(tag_levels = 'A')
 
 dev.off()
+
