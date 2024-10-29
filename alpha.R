@@ -22,6 +22,7 @@ library(patchwork)
 
 project_name <- "cereal_16S"
 amplicon <- "16S" # ITS or 16S
+out <- "diversity-cereal-16S"
 
 readRenviron("/home/sergio/Renvs/.RenvBrigit")
 brigit_IP <- Sys.getenv("IP_ADDRESS")
@@ -31,7 +32,9 @@ cluster_path <- paste0("/run/user/1001/gvfs/sftp:host=",
 project_dir <- file.path(cluster_path,
                          "scratch/salias/projects",
                          project_name)
-outdir <- "/home/sergio/scratch/diversity-cereal-16S/alpha"
+outdir <- file.path("/home/sergio/scratch",
+                    out,
+                    "alpha")
 
 metadata <- read.csv(file.path(cluster_path,
                                "home/salias/projects/sporeflow/metadata.tsv"),

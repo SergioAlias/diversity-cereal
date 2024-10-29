@@ -23,6 +23,7 @@ library(ggtern)
 ## Import QIIME 2 files
 
 project_name <- "cereal_16S"
+out <- "diversity-cereal-16S"
 
 readRenviron("/home/sergio/Renvs/.RenvBrigit")
 brigit_IP <- Sys.getenv("IP_ADDRESS")
@@ -32,12 +33,16 @@ cluster_path <- paste0("/run/user/1001/gvfs/sftp:host=",
 project_dir <- file.path(cluster_path,
                       "scratch/salias/projects",
                       project_name)
-outdir <- "/home/sergio/scratch/diversity-cereal-16S/taxonomy"
+outdir <- file.path("/home/sergio/scratch",
+                    out,
+                    "taxonomy")
  
  
 dada2_file_path <- file.path(project_dir,
                              "qiime2/feature_tables/filtered_table.qza")
-metadata_file_path <- "/home/sergio/scratch/diversity-cereal-16S/metadata.tsv" # change if needed
+metadata_file_path <- file.path("/home/sergio/scratch",
+                                out,
+                                "metadata.tsv")
 taxonomy_file_path <- file.path(project_dir,
                                 "qiime2/taxonomy/taxonomy.qza")
 

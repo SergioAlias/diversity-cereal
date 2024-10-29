@@ -21,6 +21,7 @@ library(patchwork)
 ## Import QIIME 2 files
 
 project_name <- "cereal_16S"
+out <- "diversity-cereal-16S"
 
 readRenviron("/home/sergio/Renvs/.RenvBrigit")
 brigit_IP <- Sys.getenv("IP_ADDRESS")
@@ -30,7 +31,9 @@ cluster_path <- paste0("/run/user/1001/gvfs/sftp:host=",
 project_dir <- file.path(cluster_path,
                          "scratch/salias/projects",
                          project_name)
-outdir <- "/home/sergio/scratch/diversity-cereal-16S/beta"
+outdir <- paste0("/home/sergio/scratch",
+                 out,
+                 "beta")
 
 jaccard_file_path <- file.path(project_dir,
                              "qiime2/diversity/jaccard_pcoa_results.qza")
