@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-19                                       ║
-# ║ Last Modified  : 2024-07-19                                       ║
+# ║ Last Modified  : 2024-10-29                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -22,7 +22,11 @@ source("/home/sergio/projects/diversity-cereal/parse_ancombc.R")
 
 ## Import QIIME 2 files
 
-project_name <- "micofood_24"
+project_name <- "cereal_16S"
+out <- "diversity-cereal-16S"
+eco_tag <- "ECO" # ORG (ITS)
+con_tag <- "CON" # MFI (ITS)
+rot_tag <- "ROT"
 
 readRenviron("/home/sergio/Renvs/.RenvBrigit")
 brigit_IP <- Sys.getenv("IP_ADDRESS")
@@ -32,12 +36,18 @@ cluster_path <- paste0("/run/user/1001/gvfs/sftp:host=",
 project_dir <- file.path(cluster_path,
                          "scratch/salias/projects",
                          project_name)
-outdir <- "/home/sergio/scratch/diversity-cereal/abundance"
+outdir <- file.path("/home/sergio/scratch",
+                    out,
+                    "abundance")
 
 treatment_rot_file_path <- file.path(project_dir,
-                                     "qiime2/abundance/Fertilization_ROT/filtered_ancombc.qza")
+                                     paste0("qiime2/abundance/Fertilization_",
+                                            rot_tag,
+                                            "/filtered_ancombc.qza"))
 treatment_con_file_path <- file.path(project_dir,
-                                     "qiime2/abundance/Fertilization_MFI/filtered_ancombc.qza")
+                                     paste0("qiime2/abundance/Fertilization_",
+                                            con_tag,
+                                            "/filtered_ancombc.qza"))
 
 rot <- import_ancombc(treatment_rot_file_path)
 con <- import_ancombc(treatment_con_file_path)
@@ -62,45 +72,45 @@ con %<>% left_join(taxonomy_parsed)
 qval_thr <- 0.05
 lfc_thr <- 2
 
-ECOvsROT <- rot[,!grepl("MFI", colnames(rot))]
-CONvsROT <- rot[,!grepl("ORG", colnames(rot))]
-ECOvsCON <- con[,!grepl("ROT", colnames(con))]
+ECOvsROT <- rot[,!grepl(con_tag, colnames(rot))]
+CONvsROT <- rot[,!grepl(eco_tag, colnames(rot))]
+ECOvsCON <- con[,!grepl(rot_tag, colnames(con))]
 
 
 ECOvsROT_up <- ECOvsROT %>%
-  rename_with(~str_remove(.x, "FertilizationORG_")) %>%
+  rename_with(~str_remove(.x, paste0("Fertilization", eco_tag, "_"))) %>%
   filter(q_val <= qval_thr) %>%
   filter(lfc >= lfc_thr) %>%
   arrange(desc(lfc))
 
 ECOvsROT_down <- ECOvsROT %>%
-  rename_with(~str_remove(.x, "FertilizationORG_")) %>%
+  rename_with(~str_remove(.x, paste0("Fertilization", eco_tag, "_"))) %>%
   filter(q_val <= qval_thr) %>%
   filter(lfc <= -lfc_thr) %>%
   arrange(lfc)
 
 
 CONvsROT_up <- CONvsROT %>%
-  rename_with(~str_remove(.x, "FertilizationMFI_")) %>%
+  rename_with(~str_remove(.x, paste0("Fertilization", con_tag, "_"))) %>%
   filter(q_val <= qval_thr) %>%
   filter(lfc >= lfc_thr) %>%
   arrange(desc(lfc))
 
 CONvsROT_down <- CONvsROT %>%
-  rename_with(~str_remove(.x, "FertilizationMFI_")) %>%
+  rename_with(~str_remove(.x, paste0("Fertilization", con_tag, "_"))) %>%
   filter(q_val <= qval_thr) %>%
   filter(lfc <= -lfc_thr) %>%
   arrange(lfc)
 
 
 ECOvsCON_up <- ECOvsCON %>%
-  rename_with(~str_remove(.x, "FertilizationORG_")) %>%
+  rename_with(~str_remove(.x, paste0("Fertilization", eco_tag, "_"))) %>%
   filter(q_val <= qval_thr) %>%
   filter(lfc >= lfc_thr) %>%
   arrange(desc(lfc))
 
 ECOvsCON_down <- ECOvsCON %>%
-  rename_with(~str_remove(.x, "FertilizationORG_")) %>%
+  rename_with(~str_remove(.x, paste0("Fertilization", eco_tag, "_"))) %>%
   filter(q_val <= qval_thr) %>%
   filter(lfc <= -lfc_thr) %>%
   arrange(lfc)
@@ -113,3 +123,4 @@ write.xlsx(list("ECOvsROT_up" = ECOvsROT_up,
                 "ECOvsCON_up" = ECOvsCON_up,
                 "ECOvsCON_down" = ECOvsCON_down),
            file = file.path(outdir, "abundance.xlsx"))
+
