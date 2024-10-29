@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-04                                       ║
-# ║ Last Modified  : 2024-10-24                                       ║
+# ║ Last Modified  : 2024-10-29                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -81,7 +81,11 @@ volcanoFromAncombc <- function(qza_path,
 
 ## Import QIIME 2 files
 
-project_name <- "micofood_24"
+project_name <- "cereal_16S"
+out <- "diversity-cereal-16S"
+eco_tag <- "ECO" # ORG (ITS)
+con_tag <- "CON" # MFI (ITS)
+rot_tag <- "ROT"
 
 readRenviron("/home/sergio/Renvs/.RenvBrigit")
 brigit_IP <- Sys.getenv("IP_ADDRESS")
@@ -91,12 +95,18 @@ cluster_path <- paste0("/run/user/1001/gvfs/sftp:host=",
 project_dir <- file.path(cluster_path,
                          "scratch/salias/projects",
                          project_name)
-outdir <- "/home/sergio/scratch/diversity-cereal/abundance"
+outdir <- file.path("/home/sergio/scratch",
+                    out,
+                    "abundance")
 
 treatment_rot_file_path <- file.path(project_dir,
-                                     "qiime2/abundance/Fertilization_ROT/filtered_ancombc.qza")
+                                     paste0("qiime2/abundance/Fertilization_",
+                                            rot_tag,
+                                            "/filtered_ancombc.qza"))
 treatment_con_file_path <- file.path(project_dir,
-                                     "qiime2/abundance/Fertilization_MFI/filtered_ancombc.qza")
+                                     paste0("qiime2/abundance/Fertilization_",
+                                            con_tag,
+                                            "/filtered_ancombc.qza"))
 
 taxonomy_file_path <- file.path(project_dir,
                                 "qiime2/taxonomy/taxonomy.qza")
@@ -117,8 +127,8 @@ source("/home/sergio/projects/diversity-cereal/colors.R")
 pdf(file.path(outdir, "volcano_treatment_eco_vs_rot.pdf"))
 
 v_treatment_eco_vs_rot <- volcanoFromAncombc(qza_path = treatment_rot_file_path,
-                             log2fc_col = "FertilizationORG_lfc",
-                             pval_col = "FertilizationORG_q_val",
+                             log2fc_col = paste0("Fertilization", eco_tag, "_lfc"),
+                             pval_col = paste0("Fertilization", eco_tag, "_q_val"),
                              up_color = treatment_colors[["ECO"]],
                              down_color = treatment_colors[["ROT"]],
                              up_shape = treatment_shapes[["ECO"]],
@@ -141,8 +151,8 @@ dev.off()
 pdf(file.path(outdir, "volcano_treatment_con_vs_rot.pdf"))
 
 v_treatment_con_vs_rot <- volcanoFromAncombc(qza_path = treatment_rot_file_path,
-                                      log2fc_col = "FertilizationMFI_lfc",
-                                      pval_col = "FertilizationMFI_q_val",
+                                      log2fc_col = paste0("Fertilization", con_tag, "_lfc"),
+                                      pval_col = paste0("Fertilization", con_tag, "_q_val"),
                                       up_color = treatment_colors[["CON"]],
                                       down_color = treatment_colors[["ROT"]],
                                       up_shape = treatment_shapes[["CON"]],
@@ -165,8 +175,8 @@ dev.off()
 pdf(file.path(outdir, "volcano_treatment_eco_vs_con.pdf"))
 
 v_treatment_eco_vs_con <- volcanoFromAncombc(qza_path = treatment_con_file_path,
-                                             log2fc_col = "FertilizationORG_lfc",
-                                             pval_col = "FertilizationORG_q_val",
+                                             log2fc_col = paste0("Fertilization", eco_tag, "_lfc"),
+                                             pval_col = paste0("Fertilization", eco_tag, "_q_val"),
                                              up_color = treatment_colors[["ECO"]],
                                              down_color = treatment_colors[["CON"]],
                                              up_shape = treatment_shapes[["ECO"]],
