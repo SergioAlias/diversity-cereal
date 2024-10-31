@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-02                                       ║
-# ║ Last Modified  : 2024-10-28                                       ║
+# ║ Last Modified  : 2024-10-31                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -22,7 +22,7 @@ library(patchwork)
 
 project_name <- "cereal_16S"
 amplicon <- "16S" # ITS or 16S
-out <- "diversity-cereal-16S"
+out <- "paper_ready_diversity"
 
 readRenviron("/home/sergio/Renvs/.RenvBrigit")
 brigit_IP <- Sys.getenv("IP_ADDRESS")
@@ -238,7 +238,8 @@ dev.off()
 ### Grouped plots
 
 pdf(file.path(outdir, "patched_treatment.pdf"),
-    width = 12)
+    width = 8.7,
+    height = 4.5)
 
 (chao1_t + theme(legend.position="none") +
  shannon_t + theme(legend.position="none") +
@@ -251,7 +252,8 @@ dev.off()
 
 
 pdf(file.path(outdir, "patched_location.pdf"),
-    width = 12)
+    width = 8.7,
+    height = 4.5)
 
 (chao1_l + theme(legend.position="none") +
     shannon_l + theme(legend.position="none") +

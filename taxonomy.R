@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-01                                       ║
-# ║ Last Modified  : 2024-10-28                                       ║
+# ║ Last Modified  : 2024-10-31                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -23,7 +23,8 @@ library(ggtern)
 ## Import QIIME 2 files
 
 project_name <- "cereal_16S"
-out <- "diversity-cereal-16S"
+local_metadata <- "diversity-cereal-16S"
+out <- "paper_ready_diversity"
 
 readRenviron("/home/sergio/Renvs/.RenvBrigit")
 brigit_IP <- Sys.getenv("IP_ADDRESS")
@@ -41,7 +42,7 @@ outdir <- file.path("/home/sergio/scratch",
 dada2_file_path <- file.path(project_dir,
                              "qiime2/feature_tables/filtered_table.qza")
 metadata_file_path <- file.path("/home/sergio/scratch",
-                                out,
+                                local_metadata,
                                 "metadata.tsv")
 taxonomy_file_path <- file.path(project_dir,
                                 "qiime2/taxonomy/taxonomy.qza")
@@ -90,8 +91,9 @@ t_stacked_family <- trans_abund$new(dataset = meco,
                                     high_level = "Family",
                                     prefix = "g__")
 
-pdf(file.path(outdir, "barplot_genus.pdf"),
-    width = 12)
+pdf(file.path(outdir, "16S_barplot_genus.pdf"),
+    width = 7.5,
+    height = 5.5)
 
 t_stacked_family$plot_bar(ggnested = TRUE,
                           high_level_add_other = TRUE,

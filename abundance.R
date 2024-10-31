@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-04                                       ║
-# ║ Last Modified  : 2024-10-29                                       ║
+# ║ Last Modified  : 2024-10-31                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -82,9 +82,9 @@ volcanoFromAncombc <- function(qza_path,
 ## Import QIIME 2 files
 
 project_name <- "cereal_16S"
-out <- "diversity-cereal-16S"
-eco_tag <- "ECO" # ORG (ITS)
-con_tag <- "CON" # MFI (ITS)
+out <- "paper_ready_diversity"
+eco_tag <- "ECO" # ORG (ITS) / ECO (16S)
+con_tag <- "CON" # MFI (ITS) / CON (16S)
 rot_tag <- "ROT"
 
 readRenviron("/home/sergio/Renvs/.RenvBrigit")
@@ -197,7 +197,8 @@ dev.off()
 ### Grouped plots
 
 pdf(file.path(outdir, "patched_abundance_treatment.pdf"),
-    width = 12)
+    width = 16.5,
+    height = 4)
 
 (v_treatment_eco_vs_rot +
     v_treatment_con_vs_rot +

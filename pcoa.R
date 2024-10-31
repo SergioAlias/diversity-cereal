@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-02                                       ║
-# ║ Last Modified  : 2024-10-28                                       ║
+# ║ Last Modified  : 2024-10-31                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -21,7 +21,7 @@ library(patchwork)
 ## Import QIIME 2 files
 
 project_name <- "cereal_16S"
-out <- "diversity-cereal-16S"
+out <- "paper_ready_diversity"
 
 readRenviron("/home/sergio/Renvs/.RenvBrigit")
 brigit_IP <- Sys.getenv("IP_ADDRESS")
@@ -31,7 +31,7 @@ cluster_path <- paste0("/run/user/1001/gvfs/sftp:host=",
 project_dir <- file.path(cluster_path,
                          "scratch/salias/projects",
                          project_name)
-outdir <- paste0("/home/sergio/scratch",
+outdir <- file.path("/home/sergio/scratch",
                  out,
                  "beta")
 
@@ -241,13 +241,39 @@ dev.off()
 
 ### Grouped plots
 
-pdf(file.path(outdir, "patched_pcoa_bray_curtis.pdf"),
-    height = 9)
+pdf(file.path(outdir, "patched_pcoa_jaccard.pdf"),
+    width = 8,
+    height = 3.5)
 
-(p_b1 / p_b2 &
+(p_j2 + p_j1 &
+    theme(plot.tag.position = "topright")) +
+  plot_layout(axis_titles = "collect",
+              guides = "collect") # +
+  # plot_annotation(tag_levels = 'A')
+
+dev.off()
+
+pdf(file.path(outdir, "patched_pcoa_bray_curtis.pdf"),
+    width = 8,
+    height = 3.5)
+
+(p_b2 + p_b1 &
   theme(plot.tag.position = "topright")) +
-  plot_layout(axis_titles = "collect") +
-  plot_annotation(tag_levels = 'A')
+  plot_layout(axis_titles = "collect",
+              guides = "collect") # +
+  # plot_annotation(tag_levels = 'A')
   
+dev.off()
+
+pdf(file.path(outdir, "patched_pcoa_aitchison.pdf"),
+    width = 8,
+    height = 3.5)
+
+(p_a2 + p_a1 &
+    theme(plot.tag.position = "topright")) +
+  plot_layout(axis_titles = "collect",
+              guides = "collect")  # +
+  # plot_annotation(tag_levels = 'A')
+
 dev.off()
 
