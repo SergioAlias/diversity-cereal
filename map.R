@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-08                                       ║
-# ║ Last Modified  : 2024-07-24                                       ║
+# ║ Last Modified  : 2024-11-06                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -35,9 +35,9 @@ esp %<>%
 locations <- data.frame(
   lng = c(-6.10, -5.38, -4.70),
   lat = c(41.48, 41.25, 41.7),
-  ID = c("Riofrío (Zamora)\n· S14 (ROT)",
-         "Fuentelapeña (Zamora)\n· S15 (ECO)\n· S16 (ECO)\n· S17 (CON)",
-         "Zamadueñas (Valladolid)\n· S18 (CON)\n· S19 (CON)"))
+  ID = c("Riofrío (Zamora)\n· RIO ROT",
+         "Fuentelapeña (Zamora)\n· FUE ECO1\n· FUE ECO2\n· FUE CON1",
+         "Zamadueñas (Valladolid)\n· ZAM CON1\n· ZAM CON2"))
 
 locations %<>% st_as_sf(coords = c("lng", "lat"), remove = FALSE, 
                       crs = 4326, agr = "constant")
