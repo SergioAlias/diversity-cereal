@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-01                                       ║
-# ║ Last Modified  : 2024-10-31                                       ║
+# ║ Last Modified  : 2024-12-18                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -22,8 +22,9 @@ library(ggtern)
 
 ## Import QIIME 2 files
 
-project_name <- "cereal_16S"
-local_metadata <- "diversity-cereal-16S"
+project_name <- "micofood_24"
+local_metadata <- "diversity-cereal"
+color_palette <- "ITS" # 16S or ITS
 out <- "paper_ready_diversity"
 
 readRenviron("/home/sergio/Renvs/.RenvBrigit")
@@ -51,6 +52,9 @@ meco <- qiime2meco(dada2_file_path,
                    sample_table = metadata_file_path,
                    taxonomy_table = taxonomy_file_path)
 
+## Colors and shapes
+
+source("/home/sergio/projects/diversity-cereal/colors.R")
 
 ## Relabel UNITE prefixes for cleaner plotting
 
@@ -98,6 +102,9 @@ pdf(file.path(outdir, "16S_barplot_genus.pdf"),
 t_stacked_family$plot_bar(ggnested = TRUE,
                           high_level_add_other = TRUE,
                           xtext_keep = FALSE,
+                          color_values = get(paste0("barplot_",
+                                                    color_palette,
+                                                    "_colors")),
                           # xtext_angle = 90,
                           # xtext_size = 6,
                           facet = c("Type", "Sampling")) + 
