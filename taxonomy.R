@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-01                                       ║
-# ║ Last Modified  : 2024-12-18                                       ║
+# ║ Last Modified  : 2024-12-19                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -22,9 +22,9 @@ library(ggtern)
 
 ## Import QIIME 2 files
 
-project_name <- "micofood_24"
-local_metadata <- "diversity-cereal"
-color_palette <- "ITS" # 16S or ITS
+project_name <- "cereal_16S"
+local_metadata <- "diversity-cereal-16S"
+color_palette <- "16S" # 16S or ITS
 out <- "paper_ready_diversity"
 
 readRenviron("/home/sergio/Renvs/.RenvBrigit")
@@ -95,7 +95,7 @@ t_stacked_family <- trans_abund$new(dataset = meco,
                                     high_level = "Family",
                                     prefix = "g__")
 
-pdf(file.path(outdir, "16S_barplot_genus.pdf"),
+pdf(file.path(outdir, paste0(color_palette, "_barplot_genus.pdf")),
     width = 7.5,
     height = 5.5)
 
