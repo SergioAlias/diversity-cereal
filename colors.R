@@ -35,17 +35,16 @@ barplot_16S_colors <- c("#FF0000",  # Red
                         "#F5F5DC",  # Beige
                         "#000080",  # Navy
                         "#FF7F00")  # Bright Orange
-barplot_ITS_colors <- c("#FF0000",  # Red
-                        "#90EE90",  # Light Green
-                        "#0000FF",  # Blue
+barplot_ITS_colors <- c("#90EE90",  # Light green
                         "#FFFF00",  # Yellow
+                        "#0000FF",  # Blue
+                        "#FF0000",  # Red
                         "#00FFFF",  # Cyan
                         "#800080",  # Purple
-                        "#FFA500",  # Orange
+                        "#808080",  # Gray
                         "#FF00FF",  # Magenta
                         "#FFC0CB",  # Pink
                         "#654321",  # Dark Brown
-                        "#808080",  # Gray
-                        "#D6FF0A",  # Olive
-                        "#FF7F00",  # # Bright Orange
-                        "#000080")  # Navy
+                        "#00FF9C",  # Saturated Green
+                        "#FC8F54",  # Orange
+                        "#113946")  # Another Blue
