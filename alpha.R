@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-02                                       ║
-# ║ Last Modified  : 2024-10-31                                       ║
+# ║ Last Modified  : 2025-01-13                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -20,8 +20,9 @@ library(patchwork)
 
 ## Import QIIME 2 files
 
-project_name <- "cereal_16S"
-amplicon <- "16S" # ITS or 16S
+project_name <- "micofood_24" # micofood_24 or cereal_16S
+amplicon <- "ITS" # ITS or 16S
+local_metadata <- "diversity-cereal" # diversity-cereal or diversity-cereal-16S
 out <- "paper_ready_diversity"
 
 readRenviron("/home/sergio/Renvs/.RenvBrigit")
@@ -36,8 +37,9 @@ outdir <- file.path("/home/sergio/scratch",
                     out,
                     "alpha")
 
-metadata <- read.csv(file.path(cluster_path,
-                               "home/salias/projects/sporeflow/metadata.tsv"),
+metadata <- read.csv(file.path("/home/sergio/scratch",
+                               local_metadata,
+                               "metadata.tsv"),
                      sep = "\t")
 
 colnames(metadata)[1] <- "SampleID"
@@ -45,10 +47,10 @@ colnames(metadata)[1] <- "SampleID"
 metadata %<>%
   mutate(Treatment = case_when(
     Fertilization == "MFI" ~ "CON",
-    Fertilization == "ORG" ~ "ECO",
-    Fertilization == "ROT" ~ "ROT",
+    Fertilization == "ORG" ~ "ORG",
+    Fertilization == "ROT" ~ "PLO",
     Fertilization == "CON" ~ "CON",
-    Fertilization == "ECO" ~ "ECO"
+    Fertilization == "ECO" ~ "ORG"
   ))
 
 shannon_file_path <- file.path(project_dir,
@@ -84,12 +86,12 @@ comparisons_location <- combn(unique(metadata$Location), 2, simplify = FALSE)
 ## Alpha boxplots
 
 if (amplicon == "ITS"){
-  shannon_pos_stat <- 7.7
-  shannon_pos_stat_paired <- c(7.3, 7.5, 7.4)
-  simpson_pos_stat <- 0.992
-  simpson_pos_stat_paired <- c(0.982, 0.987, 0.9845)
-  chao1_pos_stat <- 815
-  chao1_pos_stat_paired <- c(730, 770, 750)
+  shannon_pos_stat <- 7.8
+  shannon_pos_stat_paired <- c(7.3, 7.55, 7.4)
+  simpson_pos_stat <- 0.993
+  simpson_pos_stat_paired <- c(0.982, 0.988, 0.9845)
+  chao1_pos_stat <- 820
+  chao1_pos_stat_paired <- c(730, 775, 750)
 }
 if (amplicon == "16S"){
   shannon_pos_stat <- 11.2
