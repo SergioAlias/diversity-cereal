@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-19                                       ║
-# ║ Last Modified  : 2024-10-29                                       ║
+# ║ Last Modified  : 2025-01-14                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -116,11 +116,11 @@ ECOvsCON_down <- ECOvsCON %>%
   arrange(lfc)
 
 
-write.xlsx(list("ECOvsROT_up" = ECOvsROT_up,
-                "ECOvsROT_down" = ECOvsROT_down,
-                "CONvsROT_up" = CONvsROT_up,
-                "CONvsROT_down" = CONvsROT_down,
-                "ECOvsCON_up" = ECOvsCON_up,
-                "ECOvsCON_down" = ECOvsCON_down),
+write.xlsx(list("ORGvsPLO_up" = ECOvsROT_up,
+                "ORGvsPLO_down" = ECOvsROT_down,
+                "CONvsPLO_up" = CONvsROT_up,
+                "CONvsPLO_down" = CONvsROT_down,
+                "ORGvsCON_up" = ECOvsCON_up,
+                "ORGvsCON_down" = ECOvsCON_down),
            file = file.path(outdir, "abundance.xlsx"))
 
