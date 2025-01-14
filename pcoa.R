@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-02                                       ║
-# ║ Last Modified  : 2024-10-31                                       ║
+# ║ Last Modified  : 2025-01-13                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -20,7 +20,8 @@ library(patchwork)
 
 ## Import QIIME 2 files
 
-project_name <- "cereal_16S"
+project_name <- "micofood_24" # micofood_24 or cereal_16S
+local_metadata <- "diversity-cereal" # diversity-cereal or diversity-cereal-16S
 out <- "paper_ready_diversity"
 
 readRenviron("/home/sergio/Renvs/.RenvBrigit")
@@ -46,8 +47,9 @@ jaccard <- read_qza(jaccard_file_path)
 bray_curtis <- read_qza(bray_curtis_file_path)
 aitchison <- read_qza(aitchison_file_path)
 
-metadata <- read.csv(file.path(cluster_path,
-                                    "home/salias/projects/sporeflow/metadata.tsv"),
+metadata <- read.csv(file.path("/home/sergio/scratch",
+                               local_metadata,
+                               "metadata.tsv"),
                      sep = "\t")
 
 colnames(metadata)[1] <- "SampleID"
@@ -55,10 +57,10 @@ colnames(metadata)[1] <- "SampleID"
 metadata %<>%
   mutate(Treatment = case_when(
     Fertilization == "MFI" ~ "CON",
-    Fertilization == "ORG" ~ "ECO",
-    Fertilization == "ROT" ~ "ROT",
+    Fertilization == "ORG" ~ "ORG",
+    Fertilization == "ROT" ~ "PLO",
     Fertilization == "CON" ~ "CON",
-    Fertilization == "ECO" ~ "ECO"
+    Fertilization == "ECO" ~ "ORG"
   ))
 
 
@@ -277,3 +279,36 @@ pdf(file.path(outdir, "patched_pcoa_aitchison.pdf"),
 
 dev.off()
 
+
+### Supplementary figures plots
+
+j_both <- (p_j2 + p_j1) + 
+  plot_layout(axis_titles = "collect")
+
+b_both <- (p_b2 + p_b1) +
+  plot_layout(axis_titles = "collect")
+
+
+pdf(file.path(outdir, "patched_supp_fungi.pdf"),
+    width = 8,
+    height = 7)
+
+(j_both / b_both & theme(plot.tag.position = "topleft")) +
+  plot_layout(guides = "collect") +
+  plot_annotation(tag_levels = list(c("A", "", "B", "")))
+
+dev.off()
+
+# PNG equivalent
+
+png(file.path(outdir, "patched_supp_fungi.png"),
+    width = 8,
+    height = 7,
+    units = "in",
+    res = 300)
+
+(j_both / b_both & theme(plot.tag.position = "topleft")) +
+  plot_layout(guides = "collect") +
+  plot_annotation(tag_levels = list(c("A", "", "B", "")))
+
+dev.off()

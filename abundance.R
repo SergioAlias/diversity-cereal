@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-04                                       ║
-# ║ Last Modified  : 2024-10-31                                       ║
+# ║ Last Modified  : 2025-01-14                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -81,10 +81,10 @@ volcanoFromAncombc <- function(qza_path,
 
 ## Import QIIME 2 files
 
-project_name <- "cereal_16S"
+project_name <- "micofood_24"
 out <- "paper_ready_diversity"
-eco_tag <- "ECO" # ORG (ITS) / ECO (16S)
-con_tag <- "CON" # MFI (ITS) / CON (16S)
+eco_tag <- "ORG" # ORG (ITS) / ECO (16S)
+con_tag <- "MFI" # MFI (ITS) / CON (16S)
 rot_tag <- "ROT"
 
 readRenviron("/home/sergio/Renvs/.RenvBrigit")
@@ -133,8 +133,8 @@ v_treatment_eco_vs_rot <- volcanoFromAncombc(qza_path = treatment_rot_file_path,
                              down_color = treatment_colors[["ROT"]],
                              up_shape = treatment_shapes[["ECO"]],
                              down_shape = treatment_shapes[["ROT"]],
-                             up_legend = "DA (ECO)",
-                             down_legend = "DA (ROT)",
+                             up_legend = "DA (ORG)",
+                             down_legend = "DA (PLO)",
                              ylab = bquote(~Log[10]~ "Q-value"),
                              title = NULL,
                              subtitle = NULL,
@@ -158,7 +158,7 @@ v_treatment_con_vs_rot <- volcanoFromAncombc(qza_path = treatment_rot_file_path,
                                       up_shape = treatment_shapes[["CON"]],
                                       down_shape = treatment_shapes[["ROT"]],
                                       up_legend = "DA (CON)",
-                                      down_legend = "DA (ROT)",
+                                      down_legend = "DA (PLO)",
                                       ylab = bquote(~Log[10]~ "Q-value"),
                                       title = NULL,
                                       subtitle = NULL,
@@ -181,7 +181,7 @@ v_treatment_eco_vs_con <- volcanoFromAncombc(qza_path = treatment_con_file_path,
                                              down_color = treatment_colors[["CON"]],
                                              up_shape = treatment_shapes[["ECO"]],
                                              down_shape = treatment_shapes[["CON"]],
-                                             up_legend = "DA (ECO)",
+                                             up_legend = "DA (ORG)",
                                              down_legend = "DA (CON)",
                                              ylab = bquote(~Log[10]~ "Q-value"),
                                              title = NULL,
