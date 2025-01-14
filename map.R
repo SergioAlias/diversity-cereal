@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-08                                       ║
-# ║ Last Modified  : 2024-11-06                                       ║
+# ║ Last Modified  : 2025-01-14                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -19,7 +19,7 @@ library(ggrepel)
 
 ## Setup
 
-outdir <- "/home/sergio/scratch/diversity-cereal/maps"
+outdir <- "/home/sergio/scratch/paper_ready_diversity/maps"
 source("/home/sergio/projects/diversity-cereal/colors.R")
 
 ## Load map resources
@@ -35,8 +35,8 @@ esp %<>%
 locations <- data.frame(
   lng = c(-6.10, -5.38, -4.70),
   lat = c(41.48, 41.25, 41.7),
-  ID = c("Riofrío (Zamora)\n· RIO ROT",
-         "Fuentelapeña (Zamora)\n· FUE ECO1\n· FUE ECO2\n· FUE CON1",
+  ID = c("Riofrío (Zamora)\n· RIO PLO",
+         "Fuentelapeña (Zamora)\n· FUE ORG1\n· FUE ORG2\n· FUE CON1",
          "Zamadueñas (Valladolid)\n· ZAM CON1\n· ZAM CON2"))
 
 locations %<>% st_as_sf(coords = c("lng", "lat"), remove = FALSE, 
@@ -47,6 +47,14 @@ locations %<>% st_as_sf(coords = c("lng", "lat"), remove = FALSE,
 
 pdf(file.path(outdir, "sample_map.pdf"),
     width = 9)
+
+### PNG version
+
+# png(file.path(outdir, "sample_map.png"),
+#     width = 9,
+#     height = 7,
+#     units = "in",
+#     res = 300)
 
 ggplot(esp) +
   geom_sf(aes(fill = n_samples)) +
