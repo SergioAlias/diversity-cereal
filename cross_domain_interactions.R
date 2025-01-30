@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2025-01-15                                       ║
-# ║ Last Modified  : 2025-01-28                                       ║
+# ║ Last Modified  : 2025-01-30                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -51,6 +51,7 @@ fromQ2toPhyloTable <- function(project) {
 ## Import QIIME 2 files
 
 set.seed(1234)
+n_cores <- 10
 
 fungi_project <- "micofood_24"
 bacteria_project <- "cereal_16S"
@@ -80,12 +81,16 @@ sample_names(bacteria_table) <- sample_names(metadata)
 fungi_table %<>% as.data.frame() %>% t()
 bacteria_table %<>% as.data.frame() %>% t()
 
-
 fungi_table_org <- fungi_table[grepl("_ORG", rownames(fungi_table)), ]
 bacteria_table_org <- bacteria_table[grepl("_ORG", rownames(bacteria_table)), ]
 
 fungi_table_con <- fungi_table[grepl("_CON", rownames(fungi_table)), ]
 bacteria_table_con <- bacteria_table[grepl("_CON", rownames(bacteria_table)), ]
 
-sparxcc_org <- SparXCC(fungi_table_org,
-                       bacteria_table_org)
+sparxcc_org <- SparXCC_base(fungi_table_org,
+                       bacteria_table_org,
+                       cores = n_cores)
+
+sparxcc_con <- SparXCC_base(fungi_table_con,
+                       bacteria_table_con,
+                       cores = n_cores)
