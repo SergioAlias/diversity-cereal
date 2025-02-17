@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2025-01-15                                       ║
-# ║ Last Modified  : 2025-02-13                                       ║
+# ║ Last Modified  : 2025-02-17                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -30,6 +30,8 @@ library(tidyverse)
 library(qiime2R)
 library(phyloseq)
 library(CompoCor)
+library(pheatmap)
+library(gridExtra)
 
 ## Functions
 
@@ -48,6 +50,27 @@ fromQ2toPhyloTable <- function(project) {
   return(table)
 }
 
+doPheatmap <- function(mat, gaps_row, gaps_col) {
+  return(pheatmap(mat,
+           cluster_rows = FALSE,
+           cluster_cols = FALSE,
+           gaps_row = gaps_row,
+           gaps_col = gaps_col,
+           color = colorRampPalette(c("orange", "white", "purple"))(100),
+           legend = TRUE,
+           scale = "none",
+           show_rownames = TRUE,
+           show_colnames = TRUE,
+           angle_col = 45,
+           fontsize = 12,
+           fontsize_row = 10,
+           fontsize_col = 10,
+           legend_breaks = c(-0.95, -0.5, 0, 0.5, 0.95),
+           legend_labels = c(-1, -0.5, 0, 0.5, 1))
+  )
+}
+
+
 ## Import QIIME 2 files
 
 set.seed(1234)
@@ -56,7 +79,7 @@ n_cores <- 10
 fungi_project <- "micofood_24"
 bacteria_project <- "cereal_16S"
 base_path <- "scratch/salias/projects"
-table_path <- "qiime2/feature_tables/filtered_table.qza"
+table_path <- "qiime2/feature_tables/relative_filtered_table.qza"
 
 readRenviron("/home/sergio/Renvs/.RenvBrigit")
 brigit_IP <- Sys.getenv("IP_ADDRESS")
@@ -94,12 +117,101 @@ list2env(lapply(list(fungi_table_org = fungi_table_org,
                 function(mat) mat[, colSums(mat) != 0]),
          envir = .GlobalEnv)
 
-sparxcc_org <- SparXCC(fungi_table_org,
-                       bacteria_table_org,
-                       pseudo_count = 0,
-                       cores = n_cores)
+sparxcc_org <- SparXCC_base(fungi_table_org,
+                            bacteria_table_org,
+                            pseudo_count = 1,
+                            cores = n_cores)
 
-sparxcc_con <- SparXCC(fungi_table_con,
-                       bacteria_table_con,
-                       pseudo_count = 0,
-                       cores = n_cores)
+sparxcc_con <- SparXCC_base(fungi_table_con,
+                            bacteria_table_con,
+                            pseudo_count = 1,
+                            cores = n_cores)
+
+
+cor_org <- sparxcc_org[["cor"]]
+cor_con <- sparxcc_con[["cor"]]
+
+fungi_to_keep <- c("Aspergillus",
+                   "Penicillium",
+                   "Fusarium",
+                   "Alternaria")
+
+bacteria_to_keep <- c("Bacillus",
+                      "Arthrobacter",
+                      "Pseudoarthrobacter",
+                      "Streptomyces")
+
+
+taxa_fungi <- parse_taxonomy(read_qza(file.path(cluster_path,
+                                       base_path,
+                                       fungi_project,
+                                       "qiime2/taxonomy/taxonomy.qza"))[["data"]])
+
+taxa_bacteria <- parse_taxonomy(read_qza(file.path(cluster_path,
+                                                   base_path,
+                                                   bacteria_project,
+                                                   "qiime2/taxonomy/taxonomy.qza"))[["data"]])
+
+rownames(cor_con) <- gsub("_", " ",
+                          paste0(taxa_fungi$Species[match(rownames(cor_con),
+                                                          rownames(taxa_fungi))], 
+                                 " (",
+                                 substr(rownames(cor_con), 1, 7),
+                                 ")"))
+
+colnames(cor_con) <- gsub("_", " ",
+                          paste0(taxa_bacteria$Genus[match(colnames(cor_con),
+                                                           rownames(taxa_bacteria))],
+                                 " - ",
+                                 taxa_bacteria$Species[match(colnames(cor_con),
+                                                           rownames(taxa_bacteria))], 
+                                 " (",
+                                 substr(colnames(cor_con), 1, 7),
+                                 ")"))
+
+rownames(cor_org) <- gsub("_", " ",
+                          paste0(taxa_fungi$Species[match(rownames(cor_org),
+                                                          rownames(taxa_fungi))], 
+                                 " (",
+                                 substr(rownames(cor_org), 1, 7),
+                                 ")"))
+
+colnames(cor_org) <- gsub("_", " ",
+                          paste0(taxa_bacteria$Genus[match(colnames(cor_org),
+                                                           rownames(taxa_bacteria))],
+                                 " - ",
+                                 taxa_bacteria$Species[match(colnames(cor_org),
+                                                             rownames(taxa_bacteria))], 
+                                 " (",
+                                 substr(colnames(cor_org), 1, 7),
+                                 ")"))
+
+cor_con <- cor_con[grepl(paste(fungi_to_keep, collapse = "|"), rownames(cor_con)),
+                   grepl(paste(bacteria_to_keep, collapse = "|"), colnames(cor_con))]
+
+cor_org <- cor_org[grepl(paste(fungi_to_keep, collapse = "|"), rownames(cor_org)),
+                   grepl(paste(bacteria_to_keep, collapse = "|"), colnames(cor_org))]
+
+cor_con <- cor_con[order(rownames(cor_con)), order(colnames(cor_con))]
+cor_org <- cor_org[order(rownames(cor_org)), order(colnames(cor_org))]
+
+bacterialRenamer <- function(x) {
+  if (grepl("- NA", x)) {
+    return(gsub("- NA", "sp", x))
+  } else {
+    return(strsplit(x, " - ")[[1]][2])
+  }
+}
+
+colnames(cor_con) <- sapply(colnames(cor_con), bacterialRenamer)
+colnames(cor_org) <- sapply(colnames(cor_org), bacterialRenamer)
+
+con_plot <- doPheatmap(mat = cor_con,
+                       gaps_col = c(4, 21),
+                       gaps_row = c(4, 10, 19))
+
+org_plot <- doPheatmap(mat = cor_org,
+                       gaps_col = c(4, 20),
+                       gaps_row = c(5, 10, 17))
+
+
