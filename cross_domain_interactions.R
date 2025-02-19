@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2025-01-15                                       ║
-# ║ Last Modified  : 2025-02-17                                       ║
+# ║ Last Modified  : 2025-02-19                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -79,7 +79,7 @@ n_cores <- 10
 fungi_project <- "micofood_24"
 bacteria_project <- "cereal_16S"
 base_path <- "scratch/salias/projects"
-table_path <- "qiime2/feature_tables/relative_filtered_table.qza"
+table_path <- "qiime2/feature_tables/filtered_table.qza"
 
 readRenviron("/home/sergio/Renvs/.RenvBrigit")
 brigit_IP <- Sys.getenv("IP_ADDRESS")
