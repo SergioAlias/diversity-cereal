@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2025-01-15                                       ║
-# ║ Last Modified  : 2025-02-19                                       ║
+# ║ Last Modified  : 2025-02-28                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -32,6 +32,7 @@ library(phyloseq)
 library(CompoCor)
 library(pheatmap)
 library(gridExtra)
+library(patchwork)
 
 ## Functions
 
@@ -61,10 +62,10 @@ doPheatmap <- function(mat, gaps_row, gaps_col) {
            scale = "none",
            show_rownames = TRUE,
            show_colnames = TRUE,
-           angle_col = 45,
-           fontsize = 12,
-           fontsize_row = 10,
-           fontsize_col = 10,
+           angle_col = 90,
+           fontsize = 10,
+           fontsize_row = 6,
+           fontsize_col = 6,
            legend_breaks = c(-0.95, -0.5, 0, 0.5, 0.95),
            legend_labels = c(-1, -0.5, 0, 0.5, 1))
   )
@@ -138,7 +139,7 @@ fungi_to_keep <- c("Aspergillus",
 
 bacteria_to_keep <- c("Bacillus",
                       "Arthrobacter",
-                      "Pseudoarthrobacter",
+                      "Pseudarthrobacter",
                       "Streptomyces")
 
 
@@ -207,11 +208,159 @@ colnames(cor_con) <- sapply(colnames(cor_con), bacterialRenamer)
 colnames(cor_org) <- sapply(colnames(cor_org), bacterialRenamer)
 
 con_plot <- doPheatmap(mat = cor_con,
-                       gaps_col = c(4, 21),
-                       gaps_row = c(4, 10, 19))
+                       gaps_col = c(10, 62, 64),
+                       gaps_row = c(7, 19, 36))
 
 org_plot <- doPheatmap(mat = cor_org,
-                       gaps_col = c(4, 20),
-                       gaps_row = c(5, 10, 17))
+                       gaps_col = c(9, 65, 68),
+                       gaps_row = c(6, 14, 26))
 
+## Permutation analysis
+
+nperm = 10000
+
+permutation_test <- function(con, org, n_perm = nperm) {
+  obs_diff <- mean(con) - mean(org)
+  all_values <- c(con, org)
+  group_labels <- c(rep(1, length(con)), rep(2, length(org)))
+  
+  perm_diffs <- replicate(n_perm, {
+    shuffled_labels <- sample(group_labels)
+    mean_1 <- mean(all_values[shuffled_labels == 1])
+    mean_2 <- mean(all_values[shuffled_labels == 2])
+    mean_1 - mean_2
+  })
+  
+  p_value_two_tailed <- mean(abs(perm_diffs) >= abs(obs_diff))
+  p_value_greater <- mean(perm_diffs >= obs_diff)
+  p_value_less <- mean(perm_diffs <= obs_diff)
+  
+  return(list(obs_diff = obs_diff, p_value_two_tailed = p_value_two_tailed,
+              p_value_greater = p_value_greater, p_value_less = p_value_less))
+}
+
+### Overall Comparison
+
+cor_con_values <- as.vector(cor_con)
+cor_org_values <- as.vector(cor_org)
+
+overall_test <- permutation_test(cor_con_values, cor_org_values)
+
+cat("===== Overall Comparison =====\n")
+cat("Observed Difference in Means:", overall_test$obs_diff, "\n")
+cat("Two-tailed P-Value:", overall_test$p_value_two_tailed, "\n")
+cat("P-Value (cor_con > cor_org):", overall_test$p_value_greater, "\n")
+cat("P-Value (cor_con < cor_org):", overall_test$p_value_less, "\n\n")
+if (overall_test$p_value_greater < 0.05) {
+  cat("Conclusion: cor_con correlations are significantly larger than cor_org.\n")
+} else if (overall_test$p_value_less < 0.05) {
+  cat("Conclusion: cor_con correlations are significantly smaller than cor_org.\n")
+} else {
+  cat("Conclusion: No significant difference in direction.\n")
+}
+
+overall_df_pair <- data.frame(
+  Correlation = c(cor_con_values, cor_org_values),
+  Condition = rep(c("CON", "ORG"), times = c(length(cor_con_values), length(cor_org_values)))
+)
+
+overall_p <- ggplot(overall_df_pair, aes(x = Correlation, fill = Condition, color = Condition)) +
+  geom_density(alpha = 0.6, size = 1) +
+  theme_classic(base_size = 14) +
+  labs(x = "Correlation",
+       y = "Density") +
+  scale_fill_manual(values = c("#C4A484", "lightgreen")) +
+  scale_color_manual(values = c("brown", "darkgreen")) +
+  theme(
+    legend.title = element_blank(),
+    legend.position = "top",
+    legend.key.size = unit(1.25, "lines"),
+    axis.text = element_text(size = 12),
+  )
+
+### Per-Fungi-Bacteria Pair Comparison
+
+results <- data.frame(Fungus = character(), Bacteria = character(),
+                      Obs_Diff = numeric(), P_TwoTailed = numeric(),
+                      P_Greater = numeric(), P_Less = numeric(), stringsAsFactors = FALSE)
+
+plot_list <- list()
+
+for (fungus in fungi_to_keep) {
+  for (bacterium in bacteria_to_keep) {
+    cor_con_values <- as.vector(cor_con[grepl(fungus, rownames(cor_con)), grepl(bacterium, colnames(cor_con))])
+    cor_org_values <- as.vector(cor_org[grepl(fungus, rownames(cor_org)), grepl(bacterium, colnames(cor_org))])
+    test_result <- permutation_test(cor_con_values, cor_org_values)
+    results <- rbind(results, data.frame(Fungus = fungus, Bacteria = bacterium,
+                                         Obs_Diff = test_result$obs_diff,
+                                         P_TwoTailed = test_result$p_value_two_tailed,
+                                         P_Greater = test_result$p_value_greater,
+                                         P_Less = test_result$p_value_less))
+    df_pair <- data.frame(
+      Correlation = c(cor_con_values, cor_org_values),
+      Condition = rep(c("CON", "ORG"), times = c(length(cor_con_values), length(cor_org_values)))
+    )
+    
+    x_axis_label <- NULL
+    y_axis_label <- NULL
+    
+    if (length(plot_list) %in% c(0, 4, 8, 12)) {
+      y_axis_label <- fungus
+    }
+    
+    if (length(plot_list) %in% c(12, 13, 14, 15)) {
+      x_axis_label <- bacterium
+    }
+    
+    p <- ggplot(df_pair, aes(x = Correlation, fill = Condition, color = Condition)) +
+      geom_density(alpha = 0.6, size = 1) +
+      theme_classic(base_size = 14) +
+      labs(x = x_axis_label,
+           y = y_axis_label) +
+      scale_fill_manual(values = c("#C4A484", "lightgreen")) +
+      scale_color_manual(values = c("brown", "darkgreen")) +
+      theme(
+        legend.title = element_blank(),
+        legend.position = "top",
+        legend.key.size = unit(1.25, "lines"),
+        axis.title = element_text(face = "italic"),
+        axis.text = element_text(size = 12),
+      )
+    
+    
+    plot_list[[paste(fungus, bacterium, sep = "_")]] <- p
+  }
+}
+
+cat("\n===== Per Fungi-Bacteria Pair Results =====\n")
+print(results)
+
+
+wp <- guide_area() / 
+    wrap_plots(plot_list) / 
+    grid::textGrob("Correlation", gp = grid::gpar(fontsize = 15)) + 
+  plot_layout(guides = "collect",
+              heights = c(1, 30, 1))
+
+wp <- wrap_elements(grid::textGrob("Density", rot = 90, gp = grid::gpar(fontsize = 15))) + wp +
+  plot_layout(widths = c(1, 30))
+
+
+### Para enseñar ###
+
+con_plot
+
+dev.off()
+
+org_plot
+
+dev.off()
+
+overall_p
+
+View(overall_test)
+
+View(results)
+
+wp
 
