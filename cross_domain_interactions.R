@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2025-01-15                                       ║
-# ║ Last Modified  : 2025-02-28                                       ║
+# ║ Last Modified  : 2025-03-03                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -32,7 +32,9 @@ library(phyloseq)
 library(CompoCor)
 library(pheatmap)
 library(gridExtra)
+library(ggplotify)
 library(patchwork)
+library(ggpubr)
 
 ## Functions
 
@@ -51,23 +53,40 @@ fromQ2toPhyloTable <- function(project) {
   return(table)
 }
 
-doPheatmap <- function(mat, gaps_row, gaps_col) {
+doPheatmap <- function(mat,
+                       gaps_row = NULL,
+                       gaps_col = NULL,
+                       breaksList = seq(-1, 1, by = 0.02),
+                       legendbreaks = c(-0.95, -0.5, 0, 0.5, 0.95),
+                       legendlabels = c(-1, -0.5, 0, 0.5, 1),
+                       angle = 90,
+                       fontsize = 6,
+                       bordercolor = "grey60",
+                       labelsrow = NULL,
+                       labelscol = NULL,
+                       drawlegend = TRUE) {
   return(pheatmap(mat,
-           cluster_rows = FALSE,
-           cluster_cols = FALSE,
-           gaps_row = gaps_row,
-           gaps_col = gaps_col,
-           color = colorRampPalette(c("orange", "white", "purple"))(100),
-           legend = TRUE,
-           scale = "none",
-           show_rownames = TRUE,
-           show_colnames = TRUE,
-           angle_col = 90,
-           fontsize = 10,
-           fontsize_row = 6,
-           fontsize_col = 6,
-           legend_breaks = c(-0.95, -0.5, 0, 0.5, 0.95),
-           legend_labels = c(-1, -0.5, 0, 0.5, 1))
+                  cluster_rows = FALSE,
+                  cluster_cols = FALSE,
+                  legend = drawlegend,
+                  gaps_row = gaps_row,
+                  gaps_col = gaps_col,
+                  color = colorRampPalette(c("orange",
+                                             "white",
+                                             "purple"))(100),
+                  scale = "none",
+                  show_rownames = TRUE,
+                  show_colnames = TRUE,
+                  angle_col = angle,
+                  fontsize = fontsize,
+                  fontsize_row = fontsize,
+                  fontsize_col = fontsize,
+                  legend_breaks = legendbreaks,
+                  legend_labels = legendlabels,
+                  breaks = breaksList,
+                  border_color = bordercolor,
+                  labels_row = labelsrow,
+                  labels_col = labelscol)
   )
 }
 
@@ -215,6 +234,80 @@ org_plot <- doPheatmap(mat = cor_org,
                        gaps_col = c(9, 65, 68),
                        gaps_row = c(6, 14, 26))
 
+
+aggregate_matrix <- function(matrix_data, row_groups, col_groups) {
+  row_indices <- lapply(row_groups, function(pattern) grep(paste0("^", pattern), rownames(matrix_data)))
+  col_indices <- lapply(col_groups, function(pattern) grep(paste0("^", pattern), colnames(matrix_data)))
+  
+  aggregated_matrix <- matrix(NA, nrow = length(row_groups), ncol = length(col_groups),
+                              dimnames = list(row_groups, col_groups))
+  
+  for (i in seq_along(row_groups)) {
+    for (j in seq_along(col_groups)) {
+      selected_values <- matrix_data[row_indices[[i]], col_indices[[j]], drop = FALSE]
+      aggregated_matrix[i, j] <- mean(selected_values, na.rm = TRUE)
+    }
+  }
+  
+  return(aggregated_matrix)
+}
+
+
+aggr_cor_con <- aggregate_matrix(cor_con,
+                                 fungi_to_keep,
+                                 bacteria_to_keep)
+
+aggr_cor_org <- aggregate_matrix(cor_org,
+                                 fungi_to_keep,
+                                 bacteria_to_keep)
+
+italic_rownames <- as.expression(lapply(
+  rownames(aggr_cor_con),
+  function(x) bquote(italic(.(x)))))
+
+italic_colnames <- as.expression(lapply(
+  colnames(aggr_cor_con),
+  function(x) bquote(italic(.(x)))))
+
+aggr_con_plot <- doPheatmap(mat = aggr_cor_con,
+                            angle = 45,
+                            fontsize = 20,
+                            bordercolor = "black",
+                            labelsrow = " ",
+                            labelscol = italic_colnames,
+                            breaksList = seq(-0.5, 0.5, by = 0.01),
+                            legendbreaks = c(-0.45, 0, 0.45),
+                            legendlabels = c(-0.5, 0, 0.5),
+                            drawlegend = FALSE)
+
+aggr_org_plot <- doPheatmap(mat = aggr_cor_org,
+                            angle = 45,
+                            fontsize = 20,
+                            bordercolor = "black",
+                            labelsrow = italic_rownames,
+                            labelscol = italic_colnames,
+                            breaksList = seq(-0.5, 0.5, by = 0.01),
+                            legendbreaks = c(-0.45, 0, 0.45),
+                            legendlabels = c(-0.5, 0, 0.5))
+
+aggr_org_plot$gtable$widths[4] <- aggr_org_plot$gtable$widths[4] + unit(30, "bigpts")
+
+
+## Wrapped aggregated plot
+
+png("aggregated_heatmap.png",
+    width = 1000,
+    height = 560)
+
+wrap_plots(list(as.ggplot(aggr_con_plot),
+                as.ggplot(aggr_org_plot))) + 
+  plot_layout(guides = "collect",
+              widths = c(3, 4)) +
+  plot_annotation(tag_levels = 'A') &
+  theme(plot.tag = element_text(size = 25))
+
+dev.off()
+
 ## Permutation analysis
 
 nperm = 10000
@@ -264,7 +357,7 @@ overall_df_pair <- data.frame(
   Condition = rep(c("CON", "ORG"), times = c(length(cor_con_values), length(cor_org_values)))
 )
 
-overall_p <- ggplot(overall_df_pair, aes(x = Correlation, fill = Condition, color = Condition)) +
+overall_plot <- ggplot(overall_df_pair, aes(x = Correlation, fill = Condition, color = Condition)) +
   geom_density(alpha = 0.6, size = 1) +
   theme_classic(base_size = 14) +
   labs(x = "Correlation",
@@ -278,7 +371,7 @@ overall_p <- ggplot(overall_df_pair, aes(x = Correlation, fill = Condition, colo
     axis.text = element_text(size = 12),
   )
 
-### Per-Fungi-Bacteria Pair Comparison
+### Per genus comparison
 
 results <- data.frame(Fungus = character(), Bacteria = character(),
                       Obs_Diff = numeric(), P_TwoTailed = numeric(),
@@ -338,29 +431,23 @@ print(results)
 
 wp <- guide_area() / 
     wrap_plots(plot_list) / 
-    grid::textGrob("Correlation", gp = grid::gpar(fontsize = 15)) + 
+    grid::textGrob('Correlation', gp = grid::gpar(fontsize = 18)) + 
   plot_layout(guides = "collect",
               heights = c(1, 30, 1))
 
-wp <- wrap_elements(grid::textGrob("Density", rot = 90, gp = grid::gpar(fontsize = 15))) + wp +
+wp <- wrap_elements(grid::textGrob('Density', rot = 90, gp = grid::gpar(fontsize = 18))) + wp +
   plot_layout(widths = c(1, 30))
 
 
-### Para enseñar ###
-
-con_plot
-
-dev.off()
-
-org_plot
-
-dev.off()
-
-overall_p
-
-View(overall_test)
-
-View(results)
+png("density_plots.png",
+    width = 1000,
+    height = 800)
 
 wp
 
+dev.off()
+
+
+### Export results table
+
+write.csv(results, "correlation_results.csv", row.names = FALSE)
