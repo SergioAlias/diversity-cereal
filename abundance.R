@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-04                                       ║
-# ║ Last Modified  : 2025-01-14                                       ║
+# ║ Last Modified  : 2025-04-03                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -197,16 +197,16 @@ dev.off()
 ### Grouped plots
 
 pdf(file.path(outdir, "patched_abundance_treatment.pdf"),
-    width = 16.5,
+    width = 14,
     height = 4)
 
 (v_treatment_eco_vs_rot +
     v_treatment_con_vs_rot +
     v_treatment_eco_vs_con &
     theme(plot.tag.position = "topleft")) +
-  plot_layout(axis_titles = "collect") + # ,
+  plot_layout(axis_titles = "collect") # + # ,
               # guides = "collect") +
-  plot_annotation(tag_levels = 'A')
+  # plot_annotation(tag_levels = 'A')
 
 dev.off()
 

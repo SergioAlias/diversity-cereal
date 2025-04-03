@@ -4,7 +4,7 @@
 # ║ Project        : diversity-cereal                                 ║
 # ║ Author         : Sergio Alías-Segura                              ║
 # ║ Created        : 2024-07-02                                       ║
-# ║ Last Modified  : 2025-01-13                                       ║
+# ║ Last Modified  : 2025-04-03                                       ║
 # ║ GitHub Repo    : https://github.com/SergioAlias/diversity-cereal  ║
 # ║ Contact        : salias[at]ucm[dot]es                             ║
 # ╚═══════════════════════════════════════════════════════════════════╝
@@ -267,14 +267,14 @@ pdf(file.path(outdir, "patched_pcoa_bray_curtis.pdf"),
   
 dev.off()
 
-pdf(file.path(outdir, "patched_pcoa_aitchison.pdf"),
-    width = 8,
-    height = 3.5)
+pdf(file.path(outdir, "patched_pcoa_aitchison_vertical.pdf"),
+    width = 5,
+    height = 8.5)
 
-(p_a2 + p_a1 &
+(p_a2 / p_a1 &
     theme(plot.tag.position = "topright")) +
-  plot_layout(axis_titles = "collect",
-              guides = "collect")  # +
+  plot_layout(axis_titles = "collect") # ,
+              # guides = "collect")  # +
   # plot_annotation(tag_levels = 'A')
 
 dev.off()
